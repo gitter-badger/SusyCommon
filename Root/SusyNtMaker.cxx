@@ -613,6 +613,90 @@ void get_electron_eff_sf(float& sf, float& uncert,
 }
 //----------------------------------------------------------
 /*--------------------------------------------------------------------------------*/
+bool SusyNtMaker::get_electron_likelihood_result(LikeEnum::Menu menu
+						 ,Root::TElectronLikelihoodTool* tool
+						 ,const D3PDReader::ElectronD3PDObjectElement* element){
+//   std::cout << "Event number " << m_event.eventinfo.EventNumber() << std::endl;
+  tool->setOperatingPoint(menu);
+  LikeEnum::LHCalcVars_t vars;
+  vars.eta         = element->etas2();
+  vars.eT          = element->cl_E()/cosh(element->etas2());
+  vars.f3          = element->f3();
+  vars.rHad        = element->Ethad()/(element->cl_E()/cosh(element->etas2()));
+  vars.rHad1       = element->Ethad1()/(element->cl_E()/cosh(element->etas2()));
+  vars.Reta        = element->reta();
+  vars.w2          = element->weta2();
+  vars.f1          = element->f1();
+  double emax = element->emaxs1();
+  double emax2 = element->Emax2();
+  vars.eratio      = (emax+emax2 == 0 ? 0 : (emax-emax2)/(emax+emax2));
+  vars.deltaEta    = element->deltaeta1();
+  vars.d0          = element->trackd0pvunbiased();
+  vars.TRratio     = element->TRTHighTOutliersRatio();
+  vars.d0sigma     = element->tracksigd0pvunbiased();
+  vars.rphi        = element->rphi();
+  double dpOverp = 0.;
+  for (unsigned int i = 0; i<element->refittedTrack_LMqoverp().size();++i){
+    if((element->refittedTrack_author()).at(i)== 4){
+      dpOverp = 1.-(element->trackqoverp()/(element->refittedTrack_LMqoverp().at(i)));
+    }
+  }
+  vars.deltaPoverP = dpOverp;
+  vars.deltaphires = element->deltaphiRescaled();
+  vars.ip          = (int)getNumGoodVtx2();
+  
+  LikeEnum::LHAcceptVars_t vars2;
+  vars2.likelihood      = double(tool->calculate(vars));
+  vars2.eta             = vars.eta;
+  vars2.eT              = vars.eT;
+  vars2.nSi             = element->nSiHits();
+  vars2.nSiDeadSensors  = element->nPixelDeadSensors()+element->nSCTDeadSensors();
+  vars2.nPix            = element->nPixHits();
+  vars2.nPixDeadSensors = element->nPixelDeadSensors();
+  vars2.nBlayer         = element->nBLHits();
+  vars2.nBlayerOutliers = element->nBLayerOutliers();
+  vars2.expectBlayer    = element->expectHitInBLayer() == 0 ? 0 : 1;
+  vars2.convBit         = element->isEM() & (0x1 << 1);
+  vars2.ip              = vars.ip;
+
+//   std::cout << "--------------------- " << std::endl;
+//   std::cout << "vars.eta              " << vars.eta              << std::endl;
+//   std::cout << "vars.eT               " << vars.eT               << std::endl;
+//   std::cout << "vars.f3               " << vars.f3               << std::endl;
+//   std::cout << "vars.rHad             " << vars.rHad             << std::endl;
+//   std::cout << "vars.rHad1            " << vars.rHad1            << std::endl;
+//   std::cout << "vars.Reta             " << vars.Reta             << std::endl;
+//   std::cout << "vars.w2               " << vars.w2               << std::endl;
+//   std::cout << "vars.f1               " << vars.f1               << std::endl;
+//   std::cout << "vars.eratio           " << vars.eratio           << std::endl;
+//   std::cout << "vars.deltaEta         " << vars.deltaEta         << std::endl;
+//   std::cout << "vars.d0               " << vars.d0               << std::endl;
+//   std::cout << "vars.TRratio          " << vars.TRratio          << std::endl;
+//   std::cout << "vars.d0sigma          " << vars.d0sigma          << std::endl;
+//   std::cout << "vars.rphi             " << vars.rphi             << std::endl;
+//   std::cout << "vars.deltaPoverP      " << vars.deltaPoverP      << std::endl;
+//   std::cout << "vars.deltaphires      " << vars.deltaphires      << std::endl;
+//   std::cout << "--------------------- " << std::endl;
+//   std::cout << "vars2.likelihood      " << vars2.likelihood      << std::endl;
+//   std::cout << "vars2.eta             " << vars2.eta             << std::endl;
+//   std::cout << "vars2.eT              " << vars2.eT              << std::endl;
+//   std::cout << "vars2.nSi             " << vars2.nSi             << std::endl;
+//   std::cout << "vars2.nSiDeadSensors  " << vars2.nSiDeadSensors  << std::endl;
+//   std::cout << "vars2.nPix            " << vars2.nPix            << std::endl;
+//   std::cout << "vars2.nPixDeadSensors " << vars2.nPixDeadSensors << std::endl;
+//   std::cout << "vars2.nBlayer         " << vars2.nBlayer         << std::endl;
+//   std::cout << "vars2.nBlayerOutliers " << vars2.nBlayerOutliers << std::endl;
+//   std::cout << "vars2.expectBlayer    " << vars2.expectBlayer    << std::endl;
+//   std::cout << "vars2.convBit         " << vars2.convBit         << std::endl;
+//   std::cout << "vars2.ip              " << vars2.ip              << std::endl;
+//   std::cout << "--------------------- " << std::endl;
+
+  bool result = bool(tool->accept(vars2));
+//   std::cout << "Returning " << result << std::endl;
+  return result;
+}
+//----------------------------------------------------------
+/*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 {
   if(m_dbg>=5) cout << "fillElectronVars" << endl;
@@ -654,6 +738,13 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   // IsEM quality flags - no need to recalculate them
   eleOut->mediumPP    = element->mediumPP();
   eleOut->tightPP     = element->tightPP();
+
+  eleOut->looseRelaxedLH = (int)get_electron_likelihood_result(LikeEnum::LooseRelaxed,m_electron_lh_tool,element);
+  eleOut->veryLooseLH    = (int)get_electron_likelihood_result(LikeEnum::VeryLoose   ,m_electron_lh_tool,element);
+  eleOut->looseLH        = (int)get_electron_likelihood_result(LikeEnum::Loose       ,m_electron_lh_tool,element);
+  eleOut->mediumLH       = (int)get_electron_likelihood_result(LikeEnum::Medium      ,m_electron_lh_tool,element);
+  eleOut->tightLH        = (int)get_electron_likelihood_result(LikeEnum::Tight       ,m_electron_lh_tool,element);
+  eleOut->veryTightLH    = (int)get_electron_likelihood_result(LikeEnum::VeryTight   ,m_electron_lh_tool,element);
 
   eleOut->d0            = element->trackd0pv();
   eleOut->errD0         = element->tracksigd0pv();

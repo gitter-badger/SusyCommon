@@ -15,6 +15,7 @@
 #include "SUSYTools/HforToolD3PD.h"
 #include "PileupReweighting/TPileupReweighting.h"
 #include "LeptonTruthTools/RecoTauMatch.h"
+#include "ElectronPhotonSelectorTools/TElectronLikelihoodTool.h"
 
 
 /* #ifdef USEPDFTOOL */
@@ -24,6 +25,11 @@
 #include "SusyCommon/LeptonInfo.h"
 #include "SusyNtuple/SusyDefs.h"
 #include "D3PDReader/Event.h"
+
+namespace Root
+{
+  class TElectronLikelihoodTool;
+}
 
 namespace D3PDReader
 {
@@ -225,6 +231,7 @@ class D3PDAna : public TSelector
 
     // Count number of good vertices
     uint getNumGoodVtx();
+    uint getNumGoodVtx2();
 
     // Match a reco jet to a truth jet
     bool matchTruthJet(int iJet);
@@ -382,6 +389,7 @@ class D3PDAna : public TSelector
 
     SUSYObjDef                  m_susyObj;      // SUSY object definitions
     Root::TElectronEfficiencyCorrectionTool* m_eleMediumSFTool;
+    Root::TElectronLikelihoodTool* m_electron_lh_tool;
 
     TString                     m_grlFileName;  // grl file name
     Root::TGoodRunsList         m_grl;          // good runs list

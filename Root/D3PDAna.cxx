@@ -36,6 +36,7 @@ D3PDAna::D3PDAna() :
         m_mcLB(0),
         m_sys(false),
         m_eleMediumSFTool(0),
+	m_electron_lh_tool(0),
         m_pileup(0),
         m_pileup_up(0),
         m_pileup_dn(0),
@@ -53,6 +54,10 @@ D3PDAna::D3PDAna() :
   // Create the addition electron efficiency SF tool for medium SFs
   m_eleMediumSFTool = new Root::TElectronEfficiencyCorrectionTool;
 
+  // Create the likelihood tool
+  m_electron_lh_tool = new Root::TElectronLikelihoodTool();
+  //m_electron_lh_tool->setDebug(true);
+
   #ifdef USEPDFTOOL
   m_pdfTool = new PDFTool(3500000, 1, -1, 21000);
   //m_pdfTool = new PDFTool(3500000, 4./3.5);
@@ -64,6 +69,7 @@ D3PDAna::D3PDAna() :
 D3PDAna::~D3PDAna()
 {
   if(m_eleMediumSFTool) delete m_eleMediumSFTool;
+  if(m_electron_lh_tool) delete m_electron_lh_tool;
   #ifdef USEPDFTOOL
   if(m_pdfTool) delete m_pdfTool;
   #endif
@@ -114,6 +120,10 @@ void D3PDAna::SlaveBegin(TTree *tree)
          << eleMedFile << endl;
     abort();
   }
+
+  m_electron_lh_tool->setPDFFileName("$ROOTCOREBIN/data/ElectronPhotonSelectorTools/ElectronLikelihoodPdfs.root");
+  m_electron_lh_tool->setOperatingPoint(LikeEnum::VeryTight);
+  m_electron_lh_tool->initialize();
 
   m_fakeMetEst.initialize("$ROOTCOREBIN/data/MultiLep/fest_periodF_v1.root");
 
@@ -288,7 +298,7 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
                                           !m_isMC, m_event.eventinfo.RunNumber(), m_susyObj,
                                           7.*GeV, 2.47, susySys);
   m_preMuons = get_muons_baseline(d3pdMuons(), !m_isMC, m_susyObj,
-                                  6.*GeV, 2.5, susySys);
+                                  4.*GeV, 2.5, susySys);
   // Removing eta cut for baseline jets. This is for the bad jet veto.
   m_preJets = get_jet_baseline(jets, &m_event.vxp, &m_event.eventinfo, &m_event.Eventshape, !m_isMC, m_susyObj,
                                20.*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
@@ -507,6 +517,18 @@ uint D3PDAna::getNumGoodVtx()
 }
 
 /*--------------------------------------------------------------------------------*/
+// Count number of good vertices (for likelihood)
+/*--------------------------------------------------------------------------------*/
+uint D3PDAna::getNumGoodVtx2()
+{
+  uint nVtx = 0;
+  for(int i=0; i < m_event.vxp.n(); i++){
+    if(m_event.vxp.nTracks()->at(i) >= 2) nVtx++;
+  }
+  return nVtx;
+}
+
+/*--------------------------------------------------------------------------------*/
 // Match reco jet to a truth jet
 /*--------------------------------------------------------------------------------*/
 bool D3PDAna::matchTruthJet(int iJet)
@@ -571,6 +593,7 @@ void D3PDAna::fillEventTriggers()
   if(m_event.triggerbits.EF_2e7T_medium1_mu6())                   m_evtTrigFlags |= TRIG_2e7T_medium1_mu6;
   if(m_event.triggerbits.EF_e7T_medium1_2mu6())                   m_evtTrigFlags |= TRIG_e7T_medium1_2mu6;
   if(m_event.triggerbits.EF_xe80_tclcw_loose())                   m_evtTrigFlags |= TRIG_xe80_tclcw_loose;
+  if(m_event.triggerbits.EF_xe80_tclcw())                         m_evtTrigFlags |= TRIG_xe80_tclcw;
   if(m_event.triggerbits.EF_j110_a4tchad_xe90_tclcw_loose())      m_evtTrigFlags |= TRIG_j110_a4tchad_xe90_tclcw_loose;
   if(m_event.triggerbits.EF_j80_a4tchad_xe100_tclcw_loose())      m_evtTrigFlags |= TRIG_j80_a4tchad_xe100_tclcw_loose;
   if(m_event.triggerbits.EF_j80_a4tchad_xe70_tclcw_dphi2j45xe10())m_evtTrigFlags |= TRIG_j80_a4tchad_xe70_tclcw_dphi2j45xe10;
