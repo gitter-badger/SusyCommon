@@ -502,6 +502,7 @@ bool IsBadJetEvent(D3PDReader::JetD3PDObject *jets, vector<int> jets_baseline, f
     }
     return false;
 }
+
 //----------------------------------------------------------
 bool IsBadMuonEvent(SUSYObjDef &susyObj, D3PDReader::MuonD3PDObject *muon, vector<int> baseline_muons, float qoverpcut) {
     for(unsigned int i=0; i<baseline_muons.size(); i++) {

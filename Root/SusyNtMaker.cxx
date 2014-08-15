@@ -83,7 +83,6 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
     // Open the output tree
     m_outTreeFile = new TFile("susyNt.root", "recreate");
     m_outTree = new TTree("susyNt", "susyNt");
-
     // Set autosave size (determines how often tree writes to disk)
     m_outTree->SetAutoSave(10000000);
     // Max tree size determines when a new file and tree are written
@@ -354,7 +353,7 @@ bool SusyNtMaker::selectEvent()
   n_evt_ttcVeto++;
 
   // primary vertex cut is actually filtered
-  if(m_filter && (m_cutFlags & ECut_GoodVtx) == 0) return false;
+  if(m_filter && (m_cutFlags & ECut_GoodVtx) == 0) return false; 
   fillCutFlow(w);
   n_evt_goodVtx++;
 
@@ -381,7 +380,6 @@ bool SusyNtMaker::selectEvent()
   buildMet();
   //evtCheck();
   checkObjectCleaning();
-
 
   // These next cuts are not used to filter the SusyNt because they depend on systematics.
   // Instead, they are simply used for the counters, for comparing the cutflow
@@ -985,13 +983,33 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   // BCH cleaning flags
   uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
   uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();
-  #define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
-  jetOut->isBadMediumBCH = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 0);
-  jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 1);
-  jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
-  jetOut->isBadTightBCH = !m_susyObj.passBCHCleaningTight(BCH_ARGS);
-  #undef BCH_ARGS
 
+  if(bchRun>0){
+    //CHANGE!!! detEta goes to eta. Supposed to be the calibrated eta
+    //#define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
+#define BCH_ARGS bchRun, bchLB, jetOut->eta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
+    jetOut->isBadMediumBCH = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 0);
+    jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 1);
+    jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
+    jetOut->isBadTightBCH = !m_susyObj.passBCHCleaningTight(BCH_ARGS);
+#undef BCH_ARGS
+  }else{
+    jetOut->isBadMediumBCH = false;
+    jetOut->isBadMediumBCH_up = false;
+    jetOut->isBadMediumBCH_dn = false;
+    jetOut->isBadTightBCH = false;
+  }
+  cout << "    run: " <<  m_event.eventinfo.RunNumber() 
+       << " evt: " << m_event.eventinfo.EventNumber()
+       << " mcchannel: " << m_event.eventinfo.mc_channel_number()
+       << " mcRun: " << bchRun
+       << " lb: " << m_mcLB
+       << " mRun: " << m_mcRun 
+       << " detEta: " << jetOut->detEta 
+       << " eta: " << jetOut->eta 
+       << " pt: " << jetOut->pt 
+       << " bch: " << jetOut->isBadTightBCH 
+       << endl;
   // Save the met weights for the jets
   // by checking status word similar to
   // what is done in met utility

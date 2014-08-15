@@ -25,7 +25,6 @@ davide.gerbaudo@gmail.com
 #ifndef get_object_functions_h
 #define get_object_functions_h
 
-
 namespace D3PDReader
 {
 class TauD3PDObject;

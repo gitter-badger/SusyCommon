@@ -1140,9 +1140,18 @@ float D3PDAna::getBTagSF(const vector<int>& jets)
 /*--------------------------------------------------------------------------------*/
 void D3PDAna::calcRandomRunLB()
 {
+  m_mcRun=0;
+  m_mcLB=0;
   if(m_pileup){
-    m_mcRun = m_pileup->GetRandomRunNumber(m_event.eventinfo.RunNumber());
-    m_mcLB = m_pileup->GetRandomLumiBlockNumber(m_mcRun);
+    //m_pileup->SetRandomSeed(m_event.eventinfo.EventNumber());
+    //  314159 + mc_channel_number*2718 + EventNumber
+    int seed = 314159+m_event.eventinfo.EventNumber()+2718*(m_event.eventinfo.mc_channel_number());
+    cout << "seed: " << seed << endl;
+    m_pileup->SetRandomSeed(seed);
+
+    m_mcRun = m_pileup->GetRandomRunNumber(m_event.eventinfo.RunNumber(),m_event.eventinfo.averageIntPerXing());
+    if(m_mcRun>0)
+      m_mcLB = m_pileup->GetRandomLumiBlockNumber(m_mcRun);
   }
 }
 
