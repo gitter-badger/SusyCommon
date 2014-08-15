@@ -985,12 +985,31 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   // BCH cleaning flags
   uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
   uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();
-  #define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
-  jetOut->isBadMediumBCH = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 0);
-  jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 1);
-  jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
-  jetOut->isBadTightBCH = !m_susyObj.passBCHCleaningTight(BCH_ARGS);
-  #undef BCH_ARGS
+  if(bchRun>0){
+    //CHANGE!!! detEta goes to eta. Supposed to be the calibrated eta
+    //#define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
+#define BCH_ARGS bchRun, bchLB, jetOut->eta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
+    jetOut->isBadMediumBCH = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 0);
+    jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 1);
+    jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
+    jetOut->isBadTightBCH = !m_susyObj.passBCHCleaningTight(BCH_ARGS);
+#undef BCH_ARGS
+  }else{
+    jetOut->isBadMediumBCH = false;
+    jetOut->isBadMediumBCH_up = false;
+    jetOut->isBadMediumBCH_dn = false;
+    jetOut->isBadTightBCH = false;
+  }
+  cout << "    run: " <<  m_event.eventinfo.RunNumber() 
+       << " evt: " << m_event.eventinfo.EventNumber()
+       << " mcRun: " << bchRun
+       << " lb: " << m_mcLB
+       << " mRun: " << m_mcRun 
+       << " eta: " << jetOut->eta 
+       << " phi: " << jetOut->phi
+       << " pt: " << jetOut->pt 
+       << " bch: " << jetOut->isBadTightBCH 
+       << endl;
 
   // Save the met weights for the jets
   // by checking status word similar to
