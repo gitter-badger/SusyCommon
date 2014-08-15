@@ -994,10 +994,11 @@ void SusyNtMaker::fillJetVar(int jetIdx)
     jetOut->isBadTightBCH = !m_susyObj.passBCHCleaningTight(BCH_ARGS);
 #undef BCH_ARGS
   }else{
-    jetOut->isBadMediumBCH = false;
-    jetOut->isBadMediumBCH_up = false;
-    jetOut->isBadMediumBCH_dn = false;
-    jetOut->isBadTightBCH = false;
+    // Kill the event. Likely the pileup weight will also be zero.
+    jetOut->isBadMediumBCH = true;
+    jetOut->isBadMediumBCH_up = true;
+    jetOut->isBadMediumBCH_dn = true;
+    jetOut->isBadTightBCH = true;
   }
   cout << "    run: " <<  m_event.eventinfo.RunNumber() 
        << " evt: " << m_event.eventinfo.EventNumber()
