@@ -899,6 +899,8 @@ void SusyD3PDAna::checkEventCleaning()
   if(passTileErr())  m_cutFlags |= ECut_TileErr;
   if(passGoodVtx())  m_cutFlags |= ECut_GoodVtx;
   if(passTileTrip()) m_cutFlags |= ECut_TileTrip;
+  uint bchRun = m_isMC? m_mcRun : d3pd.evt.RunNumber();
+  if(bchRun>0)       m_cutFlags |= ECut_ValidMu;
 }
 
 /*--------------------------------------------------------------------------------*/
