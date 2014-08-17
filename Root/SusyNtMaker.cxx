@@ -323,6 +323,9 @@ bool SusyNtMaker::selectEvent()
   n_evt_initial++;
   fillCutFlow(w);
 
+  // Calculate random run/lb number, necessary for BCH cleaning flag
+  if(m_isMC) calcRandomRunLB();
+
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
   // Obj Independent checks
 
@@ -1373,6 +1376,9 @@ void SusyNtMaker::doSystematic()
 
     selectObjects(sys);
     buildMet(sys);
+
+    // Calculate random run/lb number, necessary for BCH cleaning flag
+    if(m_isMC) calcRandomRunLB();
 
     checkEventCleaning();
     checkObjectCleaning();
