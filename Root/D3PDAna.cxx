@@ -289,19 +289,19 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
 
   D3PDReader::JetD3PDObject *jets = d3pdJets();
   // Container object selection
-  if(m_selectTaus) m_contTaus = get_taus_baseline(d3pdTaus(), m_susyObj, 20.*GeV, 2.47,
+  if(m_selectTaus) m_contTaus = get_taus_baseline(d3pdTaus(), m_susyObj, TAU_PT_CUT*GeV, 2.47,
                                                   SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
                                                   susySys, true);
-
+  MUON_PT_CUT_MONOJET;
   // Preselection
   m_preElectrons = get_electrons_baseline(d3pdElectrons(), &m_event.el_MET_Egamma10NoTau,
                                           !m_isMC, m_event.eventinfo.RunNumber(), m_susyObj,
-                                          7.*GeV, 2.47, susySys);
+                                          ELECTRON_PT_CUT_MONOJET*GeV, 2.47, susySys);
   m_preMuons = get_muons_baseline(d3pdMuons(), !m_isMC, m_susyObj,
-                                  4.*GeV, 2.5, susySys);
+                                  MUON_PT_CUT_MONOJET*GeV, 2.5, susySys); // baseline uses a different eta
   // Removing eta cut for baseline jets. This is for the bad jet veto.
   m_preJets = get_jet_baseline(jets, &m_event.vxp, &m_event.eventinfo, &m_event.Eventshape, !m_isMC, m_susyObj,
-                               20.*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
+                               JET_PT_CUT*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
   //m_preJets = get_jet_baseline(jets, &m_event.vxp, &m_event.eventinfo, !m_isMC, m_susyObj,
   //                             20.*GeV, 4.9, susySys, false, goodJets);
 

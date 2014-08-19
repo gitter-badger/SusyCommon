@@ -516,6 +516,7 @@ bool IsBadMuonEvent(SUSYObjDef &susyObj, D3PDReader::MuonD3PDObject *muon, vecto
 bool IsCosmic(SUSYObjDef &susyObj, D3PDReader::MuonD3PDObject *muon, vector<int> baseline_muons, float z0cut, float d0cut) {
     for(unsigned int i=0; i<baseline_muons.size(); i++) {
         const D3PDReader::MuonD3PDObjectElement* muonElement = & (*muon)[baseline_muons[i]];
+	//cout << "pT " << muonElement->pt() << endl;
         //if(susyObj.IsCosmicMuon(muon->z0_exPV()->at(baseline_muons[i]),muon->d0_exPV()->at(baseline_muons[i]), z0cut, d0cut))
         if(susyObj.IsCosmicMuon(muonElement->z0_exPV(), muonElement->d0_exPV(), z0cut, d0cut)) {
             return true;
