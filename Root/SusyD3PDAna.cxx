@@ -270,19 +270,19 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   else if(sys == NtSys_TES_DN    ) susySys = SystErr::TESDOWN;    // TES down
 
   // Container object selection
-  if(m_selectTaus) m_contTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.47,
+  if(m_selectTaus) m_contTaus = get_taus_baseline(&d3pd.tau, m_susyObj, TAU_PT_CUT*GeV, 2.47,
                                                   SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
                                                   susySys, true);
 
   // Preselection
   m_preElectrons = get_electrons_baseline(&d3pd.ele, &d3pd.elMetEgamma10NoTau,
                                           !m_isMC, d3pd.evt.RunNumber(), m_susyObj,
-                                          7.*GeV, 2.47, susySys);
+                                          ELECTRON_PT_CUT_MONOJET*GeV, 2.47, susySys);
   m_preMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj,
-                                  6.*GeV, 2.5, susySys);
+                                  MUON_PT_CUT_MONOJET*GeV, 2.5, susySys);
   // Removing eta cut for baseline jets. This is for the bad jet veto.
   m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, &d3pd.evtShape, !m_isMC, m_susyObj,
-                               20.*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
+                               JET_PT_CUT*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
   //m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj,
   //                             20.*GeV, 4.9, susySys, false, goodJets);
 
@@ -292,7 +292,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
                                   10.*GeV, 2.5, susySys);
 
   // Preselect taus
-  if(m_selectTaus) m_preTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.47,
+  if(m_selectTaus) m_preTaus = get_taus_baseline(&d3pd.tau, m_susyObj, TAU_PT_CUT*GeV, 2.47,
                                                  SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose,
                                                  susySys, true);
 

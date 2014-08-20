@@ -292,7 +292,6 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
   if(m_selectTaus) m_contTaus = get_taus_baseline(d3pdTaus(), m_susyObj, TAU_PT_CUT*GeV, 2.47,
                                                   SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
                                                   susySys, true);
-  MUON_PT_CUT_MONOJET;
   // Preselection
   m_preElectrons = get_electrons_baseline(d3pdElectrons(), &m_event.el_MET_Egamma10NoTau,
                                           !m_isMC, m_event.eventinfo.RunNumber(), m_susyObj,
@@ -311,7 +310,7 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
                                   10.*GeV, 2.5, susySys);
 
   // Preselect taus
-  if(m_selectTaus) m_preTaus = get_taus_baseline(d3pdTaus(), m_susyObj, 20.*GeV, 2.47,
+  if(m_selectTaus) m_preTaus = get_taus_baseline(d3pdTaus(), m_susyObj, TAU_PT_CUT*GeV, 2.47,
                                                  SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose,
                                                  susySys, true);
 
