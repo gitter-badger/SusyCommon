@@ -119,9 +119,6 @@ class SusyNtMaker : public D3PDAna
     // Set the output file name
     void setFileName(std::string out_name="susyNt") { m_out_file_name = out_name; }
 
-    // Set the output file name
-    void setTEST(bool out_name=false) {  }
-
  private:
     //static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
     //static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
