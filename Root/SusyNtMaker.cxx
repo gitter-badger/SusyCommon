@@ -1003,17 +1003,17 @@ void SusyNtMaker::fillJetVar(int jetIdx)
     jetOut->isBadMediumBCH_dn = true;
     jetOut->isBadTightBCH = true;
   }
-  cout << "    run: " <<  m_event.eventinfo.RunNumber() 
-       << " evt: " << m_event.eventinfo.EventNumber()
-       << " mcchannel: " << m_event.eventinfo.mc_channel_number()
-       << " mcRun: " << bchRun
-       << " lb: " << m_mcLB
-       << " mRun: " << m_mcRun 
-       << " detEta: " << jetOut->detEta 
-       << " eta: " << jetOut->eta 
-       << " pt: " << jetOut->pt 
-       << " bch: " << jetOut->isBadTightBCH 
-       << endl;
+  if(false) cout << "    run: " <<  m_event.eventinfo.RunNumber() 
+		 << " evt: " << m_event.eventinfo.EventNumber()
+		 << " mcchannel: " << m_event.eventinfo.mc_channel_number()
+		 << " mcRun: " << bchRun
+		 << " lb: " << m_mcLB
+		 << " mRun: " << m_mcRun 
+		 << " detEta: " << jetOut->detEta 
+		 << " eta: " << jetOut->eta 
+		 << " pt: " << jetOut->pt 
+		 << " bch: " << jetOut->isBadTightBCH 
+		 << endl;
   // Save the met weights for the jets
   // by checking status word similar to
   // what is done in met utility
