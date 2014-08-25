@@ -167,11 +167,13 @@ vector<int> overlap_removal(SUSYObjDef &susyobj, D3PDObject1 *o1, vector<int> in
             if(dynamic_cast<D3PDReader::ElectronD3PDObject *>( o1 ))  object1 = susyobj.GetElecTLV(indices_1[i]);
             else if(dynamic_cast<D3PDReader::MuonD3PDObject *>( o1 )) object1 = susyobj.GetMuonTLV(indices_1[i]);
             else if(dynamic_cast<D3PDReader::JetD3PDObject *>( o1 ))  object1 = susyobj.GetJetTLV(indices_1[i]);
+            else if(dynamic_cast<D3PDReader::TauD3PDObject *>( o1 ))  object1 = susyobj.GetTauTLV(indices_1[i]);
             else object1.SetPtEtaPhiM(o1->pt()->at(indices_1[i]), o1->eta()->at(indices_1[i]),
                                       o1->phi()->at(indices_1[i]), o1->m()->at(indices_1[i]));
             if(dynamic_cast<D3PDReader::ElectronD3PDObject *>( o2 ))  object2 = susyobj.GetElecTLV(indices_2[j]);
             else if(dynamic_cast<D3PDReader::MuonD3PDObject *>( o2 )) object2 = susyobj.GetMuonTLV(indices_2[j]);
             else if(dynamic_cast<D3PDReader::JetD3PDObject *>( o2 ))  object2 = susyobj.GetJetTLV(indices_2[j]);
+            else if(dynamic_cast<D3PDReader::TauD3PDObject *>( o2 ))  object2 = susyobj.GetTauTLV(indices_2[j]);
             else object2.SetPtEtaPhiM(o2->pt()->at(indices_2[j]), o2->eta()->at(indices_2[j]),
                                       o2->phi()->at(indices_2[j]), o2->m()->at(indices_2[j]));
 
