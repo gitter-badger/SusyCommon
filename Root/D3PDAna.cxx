@@ -312,8 +312,7 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
   // Preselect taus
   if(m_selectTaus){ m_preTaus = get_taus_baseline(d3pdTaus(), m_susyObj, TAU_PT_CUT*GeV, 2.47,
 						  SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose,
-						  susySys, true);
-    m_sigTaus      = get_taus_signal(d3pdTaus(), m_baseTaus, m_susyObj);
+						  susySys, true);    
   }
 
   performOverlapRemoval();
@@ -341,6 +340,7 @@ void D3PDAna::performOverlapRemoval()
     m_baseTaus    = overlap_removal(m_susyObj, d3pdTaus(), m_preTaus, d3pdElectrons(), m_baseElectrons, 0.2, false, false);
     // tau-mu overlap removal
     m_baseTaus    = overlap_removal(m_susyObj, d3pdTaus(), m_baseTaus, d3pdMuons(), m_preMuons, 0.2, false, false);
+    m_sigTaus      = get_taus_signal(d3pdTaus(), m_baseTaus, m_susyObj);
   }
 
   // e-jet overlap removal
