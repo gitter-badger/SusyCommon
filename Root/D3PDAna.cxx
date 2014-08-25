@@ -369,12 +369,10 @@ void D3PDAna::performOverlapRemoval()
   // jet-tau overlap removal
   m_baseJets      = overlap_removal(m_susyObj, jets, m_baseJets, d3pdTaus(), m_sigTaus, 0.2, false, false); // m_baseTaus changed to signal leptons HACK
 
-  // remove SFOS lepton pairs with Mll < 12 GeV
-  if(false){ // turned off for monojet HACK
-    m_baseElectrons = RemoveSFOSPair(m_susyObj, d3pdElectrons(), m_baseElectrons, 12.*GeV);
-    m_baseMuons     = RemoveSFOSPair(m_susyObj, d3pdMuons(), m_baseMuons,     12.*GeV);
-    //m_baseTaus      = RemoveSFOSPair(m_susyObj, d3pdTaus(), m_baseTaus,      12.*GeV);
-  }
+  // remove SFOS lepton pairs with Mll < 12 GeV (MONOJET change)
+  m_baseElectrons = RemoveSFOSPair(m_susyObj, d3pdElectrons(), m_baseElectrons, MLL_MIN_MONJET*GeV);
+  m_baseMuons     = RemoveSFOSPair(m_susyObj, d3pdMuons(), m_baseMuons,     MLL_MIN_MONJET*GeV);
+  //m_baseTaus      = RemoveSFOSPair(m_susyObj, d3pdTaus(), m_baseTaus,      MLL_MIN_MONJET*GeV);
 }
 
 /*--------------------------------------------------------------------------------*/
