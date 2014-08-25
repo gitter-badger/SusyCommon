@@ -205,7 +205,8 @@ class SusyNtMaker : public D3PDAna
     // Timer
     TStopwatch          m_timer;
 
-    std::string         m_out_file_name;
+    // output file name
+    std::string     m_out_file_name;
 };
 
 } // susy

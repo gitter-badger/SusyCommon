@@ -258,6 +258,7 @@ int main(int argc, char** argv)
   susyAna->setNLepFilter(nLepFilter);
   susyAna->setNLepTauFilter(nLepTauFilter);
   susyAna->setFilterTrigger(filterTrig);
+  susyAna->setFileName("susyNt");
 
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   susyAna->setGRLFile(grl);
