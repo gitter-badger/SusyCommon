@@ -57,7 +57,7 @@ vector<int> get_taus_baseline(D3PDReader::TauD3PDObject* taus, SUSYObjDef& susyO
 vector<int> get_taus_signal(D3PDReader::TauD3PDObject* taus, vector<int>& taus_base,
                             SUSYObjDef& susyObj, float ptCut=20.*GeV, float etaCut=2.47,
                             SUSYTau::IDLevel jetBDTLevel=SUSYTau::TauMedium,
-                            SUSYTau::IDLevel eleBDTLevel=SUSYTau::TauMedium,
+                            SUSYTau::IDLevel eleBDTLevel=SUSYTau::TauLoose, // fixed to tau loose- HACK
                             SUSYTau::IDLevel muonLevel=SUSYTau::TauMedium,
                             SystErr::Syste sys=SystErr::NONE,
                             bool isD3PD1512=false);

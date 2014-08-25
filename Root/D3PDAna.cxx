@@ -310,9 +310,11 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
                                   10.*GeV, 2.5, susySys);
 
   // Preselect taus
-  if(m_selectTaus) m_preTaus = get_taus_baseline(d3pdTaus(), m_susyObj, TAU_PT_CUT*GeV, 2.47,
-                                                 SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose,
-                                                 susySys, true);
+  if(m_selectTaus){ m_preTaus = get_taus_baseline(d3pdTaus(), m_susyObj, TAU_PT_CUT*GeV, 2.47,
+						  SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose,
+						  susySys, true);
+    m_sigTaus      = get_taus_signal(d3pdTaus(), m_baseTaus, m_susyObj);
+  }
 
   performOverlapRemoval();
 
@@ -358,12 +360,15 @@ void D3PDAna::performOverlapRemoval()
   m_baseMuons     = overlap_removal(m_susyObj, d3pdMuons(), m_baseMuons, d3pdMuons(), m_baseMuons, 0.05, true, false);
 
   // jet-tau overlap removal
-  m_baseJets      = overlap_removal(m_susyObj, jets, m_baseJets, d3pdTaus(), m_baseTaus, 0.2, false, false);
+  //m_baseJets      = overlap_removal(m_susyObj, jets, m_baseJets, d3pdTaus(), m_baseTaus, 0.2, false, false); // changed to signal leptons HACK
+  m_baseJets      = overlap_removal(m_susyObj, jets, m_baseJets, d3pdTaus(), m_sigTaus, 0.2, false, false);
 
   // remove SFOS lepton pairs with Mll < 12 GeV
-  m_baseElectrons = RemoveSFOSPair(m_susyObj, d3pdElectrons(), m_baseElectrons, 12.*GeV);
-  m_baseMuons     = RemoveSFOSPair(m_susyObj, d3pdMuons(), m_baseMuons,     12.*GeV);
-  //m_baseTaus      = RemoveSFOSPair(m_susyObj, d3pdTaus(), m_baseTaus,      12.*GeV);
+  if(false){ // turned off for monojet HACK
+    m_baseElectrons = RemoveSFOSPair(m_susyObj, d3pdElectrons(), m_baseElectrons, 12.*GeV);
+    m_baseMuons     = RemoveSFOSPair(m_susyObj, d3pdMuons(), m_baseMuons,     12.*GeV);
+    //m_baseTaus      = RemoveSFOSPair(m_susyObj, d3pdTaus(), m_baseTaus,      12.*GeV);
+  }
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -375,10 +380,10 @@ void D3PDAna::selectSignalObjects()
   uint nVtx = getNumGoodVtx();
   D3PDReader::JetD3PDObject *jets =  d3pdJets();
   m_sigElectrons = get_electrons_signal(d3pdElectrons(), m_baseElectrons, d3pdMuons(), m_baseMuons,
-                                        nVtx, !m_isMC, m_susyObj, 10.*GeV, 0.16, 0.18, 5., 0.4);
+                                        nVtx, !m_isMC, m_susyObj, ELECTRON_PT_CUT_MONOJET*GeV, 0.16, 0.18, 5., 0.4);
   m_sigMuons     = get_muons_signal(d3pdMuons(), m_baseMuons, d3pdElectrons(), m_baseElectrons,
-                                    nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
-  m_sigJets      = get_jet_signal(jets, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
+                                    nVtx, !m_isMC, m_susyObj, MUON_PT_CUT_MONOJET*GeV, .12, 3., 1.);
+  m_sigJets      = get_jet_signal(jets, m_susyObj, m_baseJets, JET_PT_CUT*GeV, 2.5, 0.75);
   m_sigTaus      = get_taus_signal(d3pdTaus(), m_baseTaus, m_susyObj);
 
   // combine light leptons
