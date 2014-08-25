@@ -134,9 +134,9 @@ class SusyNtMaker : public D3PDAna
 /*                              Root::TElectronEfficiencyCorrectionTool* electronTriggerSF, */
 /*                              int RunNumber); */
 
-    bool get_electron_likelihood_result(LikeEnum::Menu menu
-					,Root::TElectronLikelihoodTool* tool
-					,const D3PDReader::ElectronD3PDObjectElement* element);
+    bool get_electron_likelihood_result(LikeEnum::Menu menu,
+					Root::TElectronLikelihoodTool* tool,
+					const D3PDReader::ElectronD3PDObjectElement* element);
     
  protected:
 

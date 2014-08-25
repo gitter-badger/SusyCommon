@@ -83,7 +83,7 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
 
     // Open the output tree
     const char* my_output_name = (m_out_file_name+std::string(".root")).c_str();
-    m_outTreeFile = new TFile("susyNt.root", "recreate");
+    m_outTreeFile = new TFile(my_output_name, "recreate");
     m_outTree = new TTree("susyNt", "susyNt");
     // Set autosave size (determines how often tree writes to disk)
     m_outTree->SetAutoSave(10000000);
