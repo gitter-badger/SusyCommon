@@ -478,7 +478,8 @@ bool IsBadLooseMinus(vector<int> jets_baseline, D3PDReader::JetD3PDObject *jets,
                                         jets->HECQuality()->at(jetID),
                                         jets->Timing()->at(jetID),
                                         jets->sumPtTrk_pv0_500MeV()->at(jetID)/1000., //GeV
-                                        jets->emscale_eta()->at(jetID),
+                                        //jets->emscale_eta()->at(jetID), // HACK
+					jets->constscale_eta()->at(jetID),
                                         jetPt/1000., //(jets->pt()->at(jetID))/1000., //jetPt/1000., //(jets->pt()->at(jetID))/1000., // GeV
                                         jets->fracSamplingMax()->at(jetID),
                                         jets->NegativeE()->at(jetID), // MeV

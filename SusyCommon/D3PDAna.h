@@ -296,6 +296,7 @@ class D3PDAna : public TSelector
     // Event dumps
     //
     void dumpEvent();
+    void dumpPreObjects();
     void dumpBaselineObjects();
     void dumpSignalObjects();
 

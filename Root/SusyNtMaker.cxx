@@ -978,7 +978,9 @@ void SusyNtMaker::fillJetVar(int jetIdx)
                                           element->HECQuality(),
                                           element->Timing(),
                                           element->sumPtTrk_pv0_500MeV()/GeV,
-                                          element->emscale_eta(), pt,
+                                          element->emscale_eta(), 
+					  //element->constscale_eta(),  // HACK -> check
+					  pt,
                                           element->fracSamplingMax(),
                                           element->NegativeE(),
                                           element->AverageLArQF());

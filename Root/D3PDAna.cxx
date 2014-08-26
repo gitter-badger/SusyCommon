@@ -301,6 +301,7 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
   // Removing eta cut for baseline jets. This is for the bad jet veto.
   m_preJets = get_jet_baseline(jets, &m_event.vxp, &m_event.eventinfo, &m_event.Eventshape, !m_isMC, m_susyObj,
                                JET_PT_CUT*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
+  
   //m_preJets = get_jet_baseline(jets, &m_event.vxp, &m_event.eventinfo, !m_isMC, m_susyObj,
   //                             20.*GeV, 4.9, susySys, false, goodJets);
 
@@ -400,6 +401,7 @@ void D3PDAna::selectSignalObjects()
 
   // photon selection done in separate method, why?
   if(m_selectPhotons) selectSignalPhotons();
+
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1219,6 +1221,80 @@ void D3PDAna::dumpEvent()
   cout << endl;
 }
 
+
+
+/*--------------------------------------------------------------------------------*/
+// Print pre objects
+/*--------------------------------------------------------------------------------*/
+void D3PDAna::dumpPreObjects()
+{
+  uint nEle = m_preElectrons.size();
+  uint nMu  = m_preMuons.size();
+  uint nTau = m_preTaus.size();
+  uint nJet = m_preJets.size();
+
+  cout.precision(2);
+  if(nEle){
+    cout << "Pre electrons" << endl;
+    for(uint i=0; i < nEle; i++){
+      int iEl = m_preElectrons[i];
+      const TLorentzVector &lv = m_susyObj.GetElecTLV(iEl);
+      const D3PDReader::ElectronD3PDObjectElement &ele = (*d3pdElectrons())[iEl];
+      cout << "  El : " << fixed
+           << " q " << setw(2) << (int) ele.charge()
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi();
+      if(m_isMC) cout << " type " << setw(2) << ele.type() << " origin " << setw(2) << ele.origin();
+      cout << endl;
+    }
+  }
+  if(nMu){
+    cout << "Pre muons" << endl;
+    for(uint i=0; i < nMu; i++){
+      int iMu = m_preMuons[i];
+      const TLorentzVector &lv = m_susyObj.GetMuonTLV(iMu);
+      const D3PDReader::MuonD3PDObjectElement &muo = (*d3pdMuons())[iMu];
+      cout << "  Mu : " << fixed
+           << " q " << setw(2) << (int) muo.charge()
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi();
+      if(m_isMC) cout << " type " << setw(2) << muo.type() << " origin " << setw(2) << muo.origin();
+      cout << endl;
+    }
+  }
+  if(nJet){
+    cout << "Pre jets" << endl;
+    for(uint i=0; i < nJet; i++){
+      int iJet = m_preJets[i];
+      const TLorentzVector &lv = m_susyObj.GetJetTLV(iJet);
+      const D3PDReader::JetD3PDObjectElement &jet = (*d3pdJets())[iJet];
+      cout << "  Jet : " << fixed
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi()
+           << " mv1 " << jet.flavor_weight_MV1();
+      cout << endl;
+    }
+  }
+  if(nTau){
+    cout << "Pre taus" << endl;
+    for(uint i=0; i < nTau; i++){
+      int iTau = m_preTaus[i];
+      const TLorentzVector &lv = m_susyObj.GetTauTLV(iTau);
+      const D3PDReader::TauD3PDObjectElement &jet = (*d3pdTaus())[iTau];
+      cout << "  Tau : " << fixed
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi()
+	   << endl;
+    }
+  }
+  cout.precision(6);
+  cout.unsetf(ios_base::fixed);
+}
+
 /*--------------------------------------------------------------------------------*/
 // Print baseline objects
 /*--------------------------------------------------------------------------------*/
@@ -1226,7 +1302,7 @@ void D3PDAna::dumpBaselineObjects()
 {
   uint nEle = m_baseElectrons.size();
   uint nMu  = m_baseMuons.size();
-  //uint nTau = m_baseTaus.size();
+  uint nTau = m_baseTaus.size();
   uint nJet = m_baseJets.size();
 
   cout.precision(2);
@@ -1274,6 +1350,19 @@ void D3PDAna::dumpBaselineObjects()
       cout << endl;
     }
   }
+  if(nTau){
+    cout << "Baseline taus" << endl;
+    for(uint i=0; i < nTau; i++){
+      int iTau = m_baseTaus[i];
+      const TLorentzVector &lv = m_susyObj.GetTauTLV(iTau);
+      const D3PDReader::TauD3PDObjectElement &jet = (*d3pdTaus())[iTau];
+      cout << "  Tau : " << fixed
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi()
+	   << endl;
+    }
+  }
   cout.precision(6);
   cout.unsetf(ios_base::fixed);
 }
@@ -1285,7 +1374,7 @@ void D3PDAna::dumpSignalObjects()
 {
   uint nEle = m_sigElectrons.size();
   uint nMu  = m_sigMuons.size();
-  //uint nTau = m_sigTaus.size();
+  uint nTau = m_sigTaus.size();
   uint nJet = m_sigJets.size();
 
   cout.precision(2);
@@ -1331,6 +1420,19 @@ void D3PDAna::dumpSignalObjects()
            << " phi " << setw(5) << lv.Phi()
            << " mv1 " << jet.flavor_weight_MV1();
       cout << endl;
+    }
+  }
+  if(nTau){
+    cout << "Pre taus" << endl;
+    for(uint i=0; i < nTau; i++){
+      int iTau = m_sigTaus[i];
+      const TLorentzVector &lv = m_susyObj.GetTauTLV(iTau);
+      const D3PDReader::TauD3PDObjectElement &jet = (*d3pdTaus())[iTau];
+      cout << "  Tau : " << fixed
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi()
+	   << endl;
     }
   }
   cout.precision(6);
