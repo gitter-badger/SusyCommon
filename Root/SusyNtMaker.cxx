@@ -986,7 +986,9 @@ void SusyNtMaker::fillJetVar(int jetIdx)
                                           element->AverageLArQF());
   jetOut->isHotTile     = m_susyObj.isHotTile(m_event.eventinfo.RunNumber(), element->fracSamplingMax(),
                                               element->SamplingMax(), eta, phi);
-
+  //if(m_event.eventinfo.EventNumber()==182182|| m_event.eventinfo.EventNumber()==54450){//HACK
+  //  cout <<"     Jet pt: " << jetOut->pt << " isverylooseBad: " << jetOut->isBadVeryLoose << endl;
+  //}
   // BCH cleaning flags
   uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
   uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();

@@ -360,13 +360,6 @@ void D3PDAna::performOverlapRemoval()
   // m-m overlap removal
   m_baseMuons     = overlap_removal(m_susyObj, d3pdMuons(), m_baseMuons, d3pdMuons(), m_baseMuons, 0.05, true, false);
 
-  if(m_selectTaus) {
-    // tau-e overlap removal
-    m_sigTaus      = overlap_removal(m_susyObj, d3pdTaus(), m_sigTaus, d3pdTaus(), m_baseElectrons, 0.2, false, false); // Added HACK
-    // tau-mu overlap removal
-    m_sigTaus      = overlap_removal(m_susyObj, d3pdTaus(), m_sigTaus, d3pdTaus(), m_baseMuons, 0.2, false, false); // Added HACK
-  }
-
   // jet-tau overlap removal
   m_baseJets      = overlap_removal(m_susyObj, jets, m_baseJets, d3pdTaus(), m_sigTaus, 0.2, false, false); // m_baseTaus changed to signal leptons HACK
 
@@ -1283,7 +1276,6 @@ void D3PDAna::dumpPreObjects()
     for(uint i=0; i < nTau; i++){
       int iTau = m_preTaus[i];
       const TLorentzVector &lv = m_susyObj.GetTauTLV(iTau);
-      const D3PDReader::TauD3PDObjectElement &jet = (*d3pdTaus())[iTau];
       cout << "  Tau : " << fixed
            << " pt " << setw(6) << lv.Pt()/GeV
            << " eta " << setw(5) << lv.Eta()
@@ -1355,7 +1347,6 @@ void D3PDAna::dumpBaselineObjects()
     for(uint i=0; i < nTau; i++){
       int iTau = m_baseTaus[i];
       const TLorentzVector &lv = m_susyObj.GetTauTLV(iTau);
-      const D3PDReader::TauD3PDObjectElement &jet = (*d3pdTaus())[iTau];
       cout << "  Tau : " << fixed
            << " pt " << setw(6) << lv.Pt()/GeV
            << " eta " << setw(5) << lv.Eta()
@@ -1423,11 +1414,10 @@ void D3PDAna::dumpSignalObjects()
     }
   }
   if(nTau){
-    cout << "Pre taus" << endl;
+    cout << "Signal taus" << endl;
     for(uint i=0; i < nTau; i++){
       int iTau = m_sigTaus[i];
       const TLorentzVector &lv = m_susyObj.GetTauTLV(iTau);
-      const D3PDReader::TauD3PDObjectElement &jet = (*d3pdTaus())[iTau];
       cout << "  Tau : " << fixed
            << " pt " << setw(6) << lv.Pt()/GeV
            << " eta " << setw(5) << lv.Eta()
