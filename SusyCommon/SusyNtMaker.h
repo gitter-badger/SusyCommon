@@ -70,12 +70,14 @@ class SusyNtMaker : public D3PDAna
     void saveMuonSF(SusyNtSys sys);
     void saveJetSF(SusyNtSys sys);
     void saveTauSF(SusyNtSys sys);
+    void savePhSF(SusyNtSys sys);
 
     // This should be updated, we have some duplicated code which is dangerous
     void addMissingElectron(const LeptonInfo*, SusyNtSys sys);
     void addMissingMuon(const LeptonInfo*, SusyNtSys sys);
     void addMissingJet(int index, SusyNtSys sys);
     void addMissingTau(int index, SusyNtSys sys);
+    void addMissingPh(int index, SusyNtSys sys);
 
     // Systematic enum checks
     bool isElecSys(SusyNtSys s){
@@ -93,6 +95,9 @@ class SusyNtMaker : public D3PDAna
     };
     bool isTauSys(SusyNtSys s){
       return (s == NtSys_TES_UP || s == NtSys_TES_DN);
+    }
+    bool isPhSys(SusyNtSys s){
+      return (s == NtSys_PHES_UP || s == NtSys_PHES_DN || s == NtSys_PHER_UP || s == NtSys_PHER_DN);
     }
 
     //void addEventFlag(SusyNtSys s, int eventFlag){
