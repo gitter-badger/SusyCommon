@@ -336,12 +336,14 @@ class D3PDAna : public TSelector
     std::vector<int>            m_preJets;      // selected jets
     std::vector<int>            m_preTaus;      // selected taus
     std::vector<int>            m_metMuons;     // selected muons with larger eta cut for met calc.
+    // no pre muons because we save all without overlap removal. So we skip this vector.
     
     // "baseline" objects pass selection + overlap removal
     std::vector<int>            m_baseElectrons;// baseline electrons
     std::vector<int>            m_baseMuons;    // baseline muons
     std::vector<LeptonInfo>     m_baseLeptons;  // baseline leptonInfos
     std::vector<int>            m_baseTaus;     // baseline taus
+    std::vector<int>            m_basePhotons;  // baseline photons
     std::vector<int>            m_baseJets;     // baseline jets
     std::vector<int>            m_basePhotons;  // baseline photons (no prePhotons since there is no overlap removal
     

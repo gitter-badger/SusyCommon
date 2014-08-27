@@ -991,6 +991,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   //if(m_event.eventinfo.EventNumber()==182182|| m_event.eventinfo.EventNumber()==54450){//HACK
   //  cout <<"     Jet pt: " << jetOut->pt << " isverylooseBad: " << jetOut->isBadVeryLoose << endl;
   //}
+
   // BCH cleaning flags
   uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
   uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();
@@ -1400,6 +1401,8 @@ void SusyNtMaker::doSystematic()
       saveJetSF(sys);
     else if( isTauSys(sys) )
       saveTauSF(sys);
+    else if( isPhSys(sys) )
+      savePhSF(sys);
 
     // Fill the Met for this sys
     fillMetVars(sys);
@@ -1626,6 +1629,40 @@ void SusyNtMaker::saveTauSF(SusyNtSys sys)
 }
 
 /*--------------------------------------------------------------------------------*/
+void SusyNtMaker::savePhSF(SusyNtSys sys)
+{
+  // Loop over preselected photons (called base because there is no overlap removal) and fill systematic shifts
+  for(uint iPh=0; iPh<m_basePhotons.size(); iPh++){
+    uint phIdx = m_basePhotons[iPh];
+
+    // Get the systematic shifted E, used to calculate a shift factor
+    float E_sys = m_susyObj.GetPhotonTLV(phIdx).E() / GeV;
+
+    // Try to find this photon in the list of SusyNt photon
+    Susy::Photon* phOut = 0;
+    for(uint iT=0; iT<m_susyNt.pho()->size(); iT++){
+      Susy::Photon* ph = & m_susyNt.pho()->at(iT);
+      if(ph->idx == phIdx){
+        phOut = ph;
+        break;
+      }
+    }
+    // If photon not found, then it was not nominally pre-selected and must be added now
+    if(phOut == 0){
+      addMissingPh(phIdx, sys);
+      phOut = & m_susyNt.pho()->back();
+    }
+
+    // Calculate systematic scale factor
+    float sf = E_sys / phOut->E();
+    if(sys == NtSys_PHES_UP) phOut->pes_up = sf;
+    if(sys == NtSys_PHES_DN) phOut->pes_dn = sf;
+    if(sys == NtSys_PHER_UP) phOut->per_up = sf;
+    if(sys == NtSys_PHER_DN) phOut->per_dn = sf;
+  }
+}
+
+/*--------------------------------------------------------------------------------*/
 void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
 {
   // This electron did not pass nominal cuts, and therefore
@@ -1800,6 +1837,36 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
   //float sf = E_sys / GeV / tau->E();
   //if(sys == NtSys_TES_UP) tau->tes_up = sf;
   //if(sys == NtSys_TES_DN) tau->tes_dn = sf;
+}
+
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::addMissingPh(int index, SusyNtSys sys)
+{
+  // This photon did not pass nominal cuts, and therefore
+  // needs to be added, but with the correct TLV.
+
+  // Get the systematic shifted E, used to calculate a shift factor
+  //TLorentzVector tlv_sys = m_susyObj.GetPhotonTLV(index);
+  //float E_sys = m_susyObj.GetPhotonTLV(index).E();
+
+  // Grab the d3pd variables
+  const D3PDReader::PhotonD3PDObjectElement* element = & m_event.ph[index];
+
+  // Reset the Nominal TLV
+  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
+  // regardless of our current systematic.
+  m_susyObj.SetPhotonTLV(index, element->eta(), element->phi(), element->cl_eta(), 
+			 element->cl_phi(), element->cl_E(),
+			 element->etas2(), SystErr::NONE);
+  //void SetPhotonTLV(const int iPh,
+  //                    const float ph_eta, const float ph_phi,
+  //                    const float el_cl_eta, const float el_cl_phi, const float el_cl_E, const float ph_etas2,
+  //                    const SystErr::Syste whichsyste);
+  // Fill the photon vars for this guy
+  fillPhotonVar(index);
+
+  // Set SF
+  // This should only be done in savePhSF
 }
 /*--------------------------------------------------------------------------------*/
 //bool SusyNtMaker::isBuggyWwSherpaSample(const int &dsid)
