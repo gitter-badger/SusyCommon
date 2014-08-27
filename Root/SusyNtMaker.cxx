@@ -217,6 +217,7 @@ void SusyNtMaker::Terminate()
   cout << "  SigMuo    " << n_sig_muo     << endl;
   cout << "  SigTau    " << n_sig_tau     << endl;
   cout << "  SigJet    " << n_sig_jet     << endl;
+  cout << "  SigPhot   " << n_sig_phot    << endl;
   cout << endl;
   cout << "Event counter" << endl;
   cout << "  Initial   " << n_evt_initial << endl;
@@ -421,6 +422,7 @@ bool SusyNtMaker::selectEvent()
           n_sig_muo += m_sigMuons.size();
           n_sig_tau += m_sigTaus.size();
           n_sig_jet += m_sigJets.size();
+	  n_sig_phot += m_sigPhotons.size();
 
           // Lepton multiplicity
           uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();

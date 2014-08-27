@@ -5,6 +5,7 @@
 #include "SusyCommon/D3PDAna.h"
 #include "SusyCommon/get_object_functions.h"
 #include "egammaAnalysisUtils/egammaTriggerMatching.h"
+#include "egammaAnalysisUtils/CaloIsoCorrection.h"
 #include "D3PDReader/JetD3PDObject.h"
 
 using namespace std;
@@ -124,6 +125,8 @@ void D3PDAna::SlaveBegin(TTree *tree)
   m_electron_lh_tool->setPDFFileName("$ROOTCOREBIN/data/ElectronPhotonSelectorTools/ElectronLikelihoodPdfs.root");
   m_electron_lh_tool->setOperatingPoint(LikeEnum::VeryTight);
   m_electron_lh_tool->initialize();
+
+  CaloIsoCorrection::SetPtLeakageCorrectionsFile("$ROOTCOREBIN/data/egammaAnalysisUtils/isolation_leakage_corrections.root");
 
   m_fakeMetEst.initialize("$ROOTCOREBIN/data/MultiLep/fest_periodF_v1.root");
 
@@ -316,6 +319,15 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
 						  susySys, true);    
   }
 
+  if (m_selectPhotons) {
+    int phoQual = 1;      // Quality::Loose
+    uint isoType = 1;     // Corresponds to PTED corrected isolation
+    float etcone40CorrCut = 3*GeV;
+    
+    m_basePhotons = get_photons_baseline(&m_event.ph, m_susyObj,
+					 20.*GeV, 2.47, susySys, phoQual);
+  }
+
   performOverlapRemoval();
 
   // combine leptons
@@ -458,12 +470,9 @@ void D3PDAna::selectSignalPhotons()
   uint isoType = 1;     // Corresponds to PTED corrected isolation
   float etcone40CorrCut = 3*GeV;
 
-  vector<int> base_photons = get_photons_baseline(&m_event.ph, m_susyObj,
-                                                  20.*GeV, 2.47, SystErr::NONE, phoQual);
-
   // Latest and Greatest
   int nPV = getNumGoodVtx();
-  m_sigPhotons = get_photons_signal(&m_event.ph, base_photons, m_susyObj, nPV,
+  m_sigPhotons = get_photons_signal(&m_event.ph, m_basePhotons, m_susyObj, nPV,
                                     20.*GeV, etcone40CorrCut, isoType);
 }
 /*--------------------------------------------------------------------------------*/
@@ -499,6 +508,7 @@ void D3PDAna::clearObjects()
   m_baseMuons.clear();
   m_baseLeptons.clear();
   m_baseJets.clear();
+  m_basePhotons.clear();
   m_sigElectrons.clear();
   m_sigMuons.clear();
   m_sigLeptons.clear();
