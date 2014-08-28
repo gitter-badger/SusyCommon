@@ -112,6 +112,7 @@ void D3PDAna::SlaveBegin(TTree *tree)
 
   // Initialize electron medium SF
   // TODO: update this whenever it gets updated in SUSYTools!
+  // update the electron SF treatment
   string eleMedFile = "${ROOTCOREBIN}";
   eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v07.root";
   m_eleMediumSFTool->addFileName(eleMedFile.c_str());
@@ -461,7 +462,7 @@ void D3PDAna::selectSignalPhotons()
 
   int phoQual = 2;      // Quality::Tight
   uint isoType = 1;     // Corresponds to PTED corrected isolation
-  float etcone40CorrCut = 3*GeV;
+  float etcone40CorrCut = 3*GeV; // should be 4 GeV?
 
   vector<int> base_photons = get_photons_baseline(&m_event.ph, m_susyObj,
                                                   20.*GeV, 2.47, SystErr::NONE, phoQual);

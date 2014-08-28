@@ -115,10 +115,10 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
   m_timer.Start();
 }
 /*--------------------------------------------------------------------------------*/
-TH1F* SusyNtMaker::makeCutFlow(const char* name, const char* title)
+TH1D* SusyNtMaker::makeCutFlow(const char* name, const char* title)
 {
   //TH1F* h = new TH1F(name, title, 9, -0.5, 3.5);
-  TH1F* h = new TH1F(name, title, 15, 0., 15.);
+  TH1D* h = new TH1D(name, title, 15, 0., 15.);
   h->GetXaxis()->SetBinLabel(1, "Initial");
   h->GetXaxis()->SetBinLabel(2, "SusyProp Veto");
   h->GetXaxis()->SetBinLabel(3, "GRL");
@@ -137,10 +137,10 @@ TH1F* SusyNtMaker::makeCutFlow(const char* name, const char* title)
   return h;
 }
 /*--------------------------------------------------------------------------------*/
-TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
+TH1D* SusyNtMaker::getProcCutFlow(int signalProcess)
 {
   // Look for it on the map
-  map<int,TH1F*>::const_iterator it = m_procCutFlows.find(signalProcess);
+  map<int,TH1D*>::const_iterator it = m_procCutFlows.find(signalProcess);
   // New process
   if(it == m_procCutFlows.end()){
     stringstream stream;
@@ -307,7 +307,7 @@ bool SusyNtMaker::selectEvent()
   // It should be safe to always do procCutFlow, not just for susy samples.
   // This way we can eventually drop the genCutFlow and just rely on procCutFlow
   //TH1F* h_procCutFlow = m_isSusySample ? getProcCutFlow(m_susyFinalState) : 0;
-  TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
+  TH1D* h_procCutFlow = getProcCutFlow(m_susyFinalState);
   float w = m_isMC? m_event.eventinfo.mc_event_weight() : 1;
 
   struct FillCutFlow { ///< local function object to fill the cutflow histograms
@@ -799,7 +799,7 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   }
 
   // For the medium SF, need to use our own function
-  else{
+  else{/// Seems wrong! The SF is for Medium and not for medium&&!tight
     float sf = 1, uncert = 0;
     bool recoSF(true), idSF(true), triggerSF(false);
     int runNumber=200841; // DG why this dummy value? (copied from MultiLep/ElectronTools.h)
@@ -1070,6 +1070,9 @@ void SusyNtMaker::fillPhotonVar(int phIdx)
 
   // Save conversion info
   phoOut->isConv = element->isConv();
+
+  // same isolation
+  phoOut->topoEtcone40_corrected = element->Etcone40_corrected();
 
   // Miscellaneous
   phoOut->idx    = phIdx;

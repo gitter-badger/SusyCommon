@@ -40,8 +40,10 @@ class SusyNtMaker : public D3PDAna
     virtual bool    selectEvent();
 
     // Initialize a cutflow histo
-    TH1F* makeCutFlow(const char* name, const char* title);
-    TH1F* getProcCutFlow(int signalProcess);
+    //TH1F* makeCutFlow(const char* name, const char* title);
+    //TH1F* getProcCutFlow(int signalProcess);
+    TH1D* makeCutFlow(const char* name, const char* title);
+    TH1D* getProcCutFlow(int signalProcess);
 
     //
     // SusyNt Fill methods
@@ -203,9 +205,9 @@ class SusyNtMaker : public D3PDAna
     // track of the weighted number of events for each process!
 
     // So, we'll use a map of histos for signal processes
-    TH1F*               h_rawCutFlow;           // cutflow filled always with weight=1
-    TH1F*               h_genCutFlow;           // cutflow filled with generator weights
-    std::map<int,TH1F*> m_procCutFlows;         // cutflows, one for each subprocess
+    TH1D*               h_rawCutFlow;           // cutflow filled always with weight=1
+    TH1D*               h_genCutFlow;           // cutflow filled with generator weights
+    std::map<int,TH1D*> m_procCutFlows;         // cutflows, one for each subprocess
 
     // Timer
     TStopwatch          m_timer;
