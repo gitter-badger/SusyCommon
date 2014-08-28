@@ -174,6 +174,7 @@ class SusyNtMaker : public D3PDAna
     uint                n_sig_muo;
     uint                n_sig_tau;
     uint                n_sig_jet;
+    uint                n_sig_phot;
 
     // Some event counts
     uint                n_evt_initial;

@@ -343,8 +343,9 @@ class D3PDAna : public TSelector
     std::vector<int>            m_baseMuons;    // baseline muons
     std::vector<LeptonInfo>     m_baseLeptons;  // baseline leptonInfos
     std::vector<int>            m_baseTaus;     // baseline taus
-    std::vector<int>            m_basePhotons;  // baseline photons
     std::vector<int>            m_baseJets;     // baseline jets
+    std::vector<int>            m_basePhotons;  // baseline photons (no prePhotons since there is no overlap removal
+    
 
     // "signal" objects pass baseline + signal selection (like iso)
     std::vector<int>            m_sigElectrons; // signal electrons
