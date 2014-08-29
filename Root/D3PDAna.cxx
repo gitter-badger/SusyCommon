@@ -36,7 +36,7 @@ D3PDAna::D3PDAna() :
         m_mcRun(0),
         m_mcLB(0),
         m_sys(false),
-        m_eleMediumSFTool(0),
+        m_eleSFTools(0),
 	m_electron_lh_tool(0),
         m_pileup(0),
         m_pileup_up(0),
@@ -53,7 +53,14 @@ D3PDAna::D3PDAna() :
   m_hforTool.setVerbosity(HforToolD3PD::ERROR);
 
   // Create the addition electron efficiency SF tool for medium SFs
-  m_eleMediumSFTool = new Root::TElectronEfficiencyCorrectionTool;
+  
+  
+  Root::TElectronEfficiencyCorrectionTool* tmp0 = new Root::TElectronEfficiencyCorrectionTool();
+  m_eleSFTools.push_back(tmp0); // Medium cuts
+  Root::TElectronEfficiencyCorrectionTool* tmp1 = new Root::TElectronEfficiencyCorrectionTool();
+  m_eleSFTools.push_back(tmp1); // MediumLLH
+  Root::TElectronEfficiencyCorrectionTool* tmp2 = new Root::TElectronEfficiencyCorrectionTool();
+  m_eleSFTools.push_back(tmp2); // VeryTightLLH
 
   // Create the likelihood tool
   m_electron_lh_tool = new Root::TElectronLikelihoodTool();
@@ -69,7 +76,9 @@ D3PDAna::D3PDAna() :
 /*--------------------------------------------------------------------------------*/
 D3PDAna::~D3PDAna()
 {
-  if(m_eleMediumSFTool) delete m_eleMediumSFTool;
+  for(int i=0;i<m_eleSFTools.size();++i){
+    if(m_eleSFTools.at(i)) delete m_eleSFTools.at(i);
+  }
   if(m_electron_lh_tool) delete m_electron_lh_tool;
   #ifdef USEPDFTOOL
   if(m_pdfTool) delete m_pdfTool;
@@ -114,12 +123,29 @@ void D3PDAna::SlaveBegin(TTree *tree)
   // Initialize electron medium SF
   // TODO: update this whenever it gets updated in SUSYTools!
   // update the electron SF treatment
-  string eleMedFile = "${ROOTCOREBIN}";
-  eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v07.root";
-  m_eleMediumSFTool->addFileName(eleMedFile.c_str());
-  if(!m_eleMediumSFTool->initialize()){
+  string eleMedFile         = "${ROOTCOREBIN}";
+  string eleMedLHFile       = "${ROOTCOREBIN}";
+  string eleTightLHFile     = "${ROOTCOREBIN}";
+  string eleVeryTightLHFile = "${ROOTCOREBIN}";
+  eleMedFile         += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v07.root";
+  eleMedLHFile       += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.MediumLLH.2012.8TeV.rel17p2.v07.root";
+  eleVeryTightLHFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.VeryTightLLH.2012.8TeV.rel17p2.v07.root";
+  m_eleSFTools.at(0)->addFileName(eleMedFile        .c_str());
+  m_eleSFTools.at(1)->addFileName(eleMedLHFile      .c_str());
+  m_eleSFTools.at(2)->addFileName(eleVeryTightLHFile.c_str());
+  if(!m_eleSFTools.at(0)->initialize()){
     cout << "D3PDAna::SlaveBegin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
          << eleMedFile << endl;
+    abort();
+  }
+  if(!m_eleSFTools.at(1)->initialize()){
+    cout << "D3PDAna::SlaveBegin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
+         << eleMedLHFile << endl;
+    abort();
+  }
+  if(!m_eleSFTools.at(2)->initialize()){
+    cout << "D3PDAna::SlaveBegin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
+         << eleVeryTightLHFile << endl;
     abort();
   }
 

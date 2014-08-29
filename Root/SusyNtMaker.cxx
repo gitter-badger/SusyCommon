@@ -748,7 +748,6 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->veryLooseLH    = (int)get_electron_likelihood_result(LikeEnum::VeryLoose   ,m_electron_lh_tool,element);
   eleOut->looseLH        = (int)get_electron_likelihood_result(LikeEnum::Loose       ,m_electron_lh_tool,element);
   eleOut->mediumLH       = (int)get_electron_likelihood_result(LikeEnum::Medium      ,m_electron_lh_tool,element);
-  eleOut->tightLH        = (int)get_electron_likelihood_result(LikeEnum::Tight       ,m_electron_lh_tool,element);
   eleOut->veryTightLH    = (int)get_electron_likelihood_result(LikeEnum::VeryTight   ,m_electron_lh_tool,element);
 
   eleOut->d0            = element->trackd0pv();
@@ -801,17 +800,35 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   }
 
   // For the medium SF, need to use our own function
-  else{/// Seems wrong! The SF is for Medium and not for medium&&!tight
-    float sf = 1, uncert = 0;
-    bool recoSF(true), idSF(true), triggerSF(false);
-    int runNumber=200841; // DG why this dummy value? (copied from MultiLep/ElectronTools.h)
+  float sf = 1, uncert = 0;
+  bool recoSF(true), idSF(true), triggerSF(false);
+  int runNumber=200841; // DG why this dummy value? (copied from MultiLep/ElectronTools.h)
+  if(eleOut->mediumPP){
     if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
                                     recoSF, idSF, triggerSF, m_isAF2,
-                                    m_susyObj.GetElectron_recoSF_Class(), m_eleMediumSFTool, 0,
+                                    m_susyObj.GetElectron_recoSF_Class(), m_eleSFTools.at(0), 0,
                                     runNumber);
-    eleOut->effSF       = sf;
-    eleOut->errEffSF    = uncert;
+  }  
+  eleOut->mediumEffSF       = sf;
+  eleOut->errMediumEffSF    = uncert;
+  sf = 1; uncert = 0;
+  if(eleOut->mediumLH){
+    if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
+                                    recoSF, idSF, triggerSF, m_isAF2,
+                                    m_susyObj.GetElectron_recoSF_Class(), m_eleSFTools.at(1), 0,
+                                    runNumber);
   }
+  eleOut->mediumLHEffSF       = sf;
+  eleOut->errMediumLHEffSF    = uncert;
+  sf = 1; uncert = 0;
+  if(eleOut->veryTightLH){
+    if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
+                                    recoSF, idSF, triggerSF, m_isAF2,
+                                    m_susyObj.GetElectron_recoSF_Class(), m_eleSFTools.at(2), 0,
+                                    runNumber);
+  }
+  eleOut->veryTightLHEffSF       = sf;
+  eleOut->errVeryTightLHEffSF    = uncert;
 
   // Do we need this??
   eleOut->idx           = lepIn->idx();
@@ -1074,7 +1091,7 @@ void SusyNtMaker::fillPhotonVar(int phIdx)
   phoOut->isConv = element->isConv();
 
   // same isolation
-  phoOut->topoEtcone40_corrected = element->Etcone40_corrected();
+  //phoOut->topoEtcone40_corrected = element->Etcone40_corrected();
 
   // Miscellaneous
   phoOut->idx    = phIdx;

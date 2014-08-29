@@ -392,7 +392,7 @@ class D3PDAna : public TSelector
     //
 
     SUSYObjDef                  m_susyObj;      // SUSY object definitions
-    Root::TElectronEfficiencyCorrectionTool* m_eleMediumSFTool;
+    std::vector<Root::TElectronEfficiencyCorrectionTool*> m_eleSFTools;
     Root::TElectronLikelihoodTool* m_electron_lh_tool;
 
     TString                     m_grlFileName;  // grl file name
