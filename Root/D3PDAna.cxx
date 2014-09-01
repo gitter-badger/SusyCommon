@@ -36,7 +36,6 @@ D3PDAna::D3PDAna() :
         m_mcRun(0),
         m_mcLB(0),
         m_sys(false),
-        m_eleSFTools(0),
 	m_electron_lh_tool(0),
         m_pileup(0),
         m_pileup_up(0),
@@ -76,9 +75,10 @@ D3PDAna::D3PDAna() :
 /*--------------------------------------------------------------------------------*/
 D3PDAna::~D3PDAna()
 {
-  for(int i=0;i<m_eleSFTools.size();++i){
+  for(unsigned int i=0;i<m_eleSFTools.size();++i){
     if(m_eleSFTools.at(i)) delete m_eleSFTools.at(i);
   }
+  m_eleSFTools.clear();
   if(m_electron_lh_tool) delete m_electron_lh_tool;
   #ifdef USEPDFTOOL
   if(m_pdfTool) delete m_pdfTool;
@@ -156,7 +156,6 @@ void D3PDAna::SlaveBegin(TTree *tree)
   CaloIsoCorrection::SetPtLeakageCorrectionsFile("$ROOTCOREBIN/data/egammaAnalysisUtils/isolation_leakage_corrections.root");
 
   m_fakeMetEst.initialize("$ROOTCOREBIN/data/MultiLep/fest_periodF_v1.root");
-
   // SUSY cross sections
   if(m_isMC){
     // Back to using the SUSYTools file
@@ -1491,6 +1490,7 @@ bool D3PDAna::runningOptionsAreValid()
                                  isStreamEgamma ? m_stream==Stream_Egamma :
                                  isStreamJetEt  ? m_stream==Stream_JetTauEtmiss :
                                  false);
+	if (isStreamJetEt) consistentStream=(m_stream==Stream_JetTauEtmiss);
         if(!consistentStream) {
             valid=false;
             if(m_dbg)
