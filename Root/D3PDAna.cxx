@@ -428,9 +428,9 @@ void D3PDAna::selectSignalObjects()
   m_sigTaus      = get_taus_signal(d3pdTaus(), m_baseTaus, m_susyObj);
 
   // tau-e overlap removal
-  m_sigTaus      = overlap_removal(m_susyObj, d3pdTaus(), m_sigTaus, d3pdTaus(), m_baseElectrons, 0.2, false, false); // Added HACK
+  m_sigTaus      = overlap_removal(m_susyObj, d3pdTaus(), m_sigTaus, d3pdElectrons(), m_baseElectrons, 0.2, false, false); // Added HACK
   // tau-mu overlap removal
-  m_sigTaus      = overlap_removal(m_susyObj, d3pdTaus(), m_sigTaus, d3pdTaus(), m_baseMuons, 0.2, false, false); // Added HACK
+  m_sigTaus      = overlap_removal(m_susyObj, d3pdTaus(), m_sigTaus, d3pdMuons(), m_baseMuons, 0.2, false, false); // Added HACK
 
   // combine light leptons
   m_sigLeptons   = buildLeptonInfos(d3pdElectrons(), m_sigElectrons, d3pdMuons(), m_sigMuons, m_susyObj);
