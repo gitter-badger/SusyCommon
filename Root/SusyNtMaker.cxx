@@ -17,8 +17,6 @@
 #include "D3PDReader/PhotonD3PDObject.h"
 #include "D3PDReader/TauD3PDObject.h"
 
-#include "ElectronEfficiencyCorrection/TElectronEfficiencyCorrectionTool.h"
-
 using namespace std;
 namespace smc =susy::mc;
 
@@ -163,7 +161,6 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   // Communicate the entry number to the interface objects
   GetEntry(entry);
   m_event.GetEntry(entry);
-
   if(!m_flagsHaveBeenChecked) {
       m_flagsAreConsistent = runningOptionsAreValid();
       m_flagsHaveBeenChecked=true;
@@ -427,6 +424,7 @@ bool SusyNtMaker::selectEvent()
           // Lepton multiplicity
           uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
           //cout << "nSigLep " << nSigLep << endl;
+
           if(nSigLep >= 1){
             fillCutFlow(w);
             n_evt_1Lep++;
@@ -586,13 +584,13 @@ void SusyNtMaker::fillLeptonVars()
   }
 }
 //----------------------------------------------------------
-void get_electron_eff_sf(float& sf, float& uncert,
-                         const float &el_cl_eta, const float &pt,
-                         bool recoSF, bool idSF, bool triggerSF, bool isAF2,
-                         Root::TElectronEfficiencyCorrectionTool* electronRecoSF,
-                         Root::TElectronEfficiencyCorrectionTool* electronIDSF,
-                         Root::TElectronEfficiencyCorrectionTool* electronTriggerSF,
-                         int RunNumber)
+void SusyNtMaker::get_electron_eff_sf(float& sf, float& uncert,
+				      const float &el_cl_eta, const float &pt,
+				      bool recoSF, bool idSF, bool triggerSF, bool isAF2,
+				      Root::TElectronEfficiencyCorrectionTool* electronRecoSF,
+				      Root::TElectronEfficiencyCorrectionTool* electronIDSF,
+				      Root::TElectronEfficiencyCorrectionTool* electronTriggerSF,
+				      int RunNumber)
 {
     sf = 1;
     uncert = 0;
@@ -800,31 +798,31 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   }
 
   // For the medium SF, need to use our own function
-  float sf = 1, uncert = 0;
+  float sf = 1, uncert = 0.;
   bool recoSF(true), idSF(true), triggerSF(false);
   int runNumber=200841; // DG why this dummy value? (copied from MultiLep/ElectronTools.h)
   if(eleOut->mediumPP){
-    if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
+    if (m_isMC) SusyNtMaker::get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
                                     recoSF, idSF, triggerSF, m_isAF2,
-                                    m_susyObj.GetElectron_recoSF_Class(), m_eleSFTools.at(0), 0,
+                                    m_susyObj.GetElectron_recoSF_Class(), m_eleSFTools.at(0), NULL,
                                     runNumber);
   }  
   eleOut->mediumEffSF       = sf;
   eleOut->errMediumEffSF    = uncert;
   sf = 1; uncert = 0;
   if(eleOut->mediumLH){
-    if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
+    if (m_isMC) SusyNtMaker::get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
                                     recoSF, idSF, triggerSF, m_isAF2,
-                                    m_susyObj.GetElectron_recoSF_Class(), m_eleSFTools.at(1), 0,
+                                    m_susyObj.GetElectron_recoSF_Class(), m_eleSFTools.at(1), NULL,
                                     runNumber);
   }
   eleOut->mediumLHEffSF       = sf;
   eleOut->errMediumLHEffSF    = uncert;
   sf = 1; uncert = 0;
   if(eleOut->veryTightLH){
-    if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
+    if (m_isMC) SusyNtMaker::get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
                                     recoSF, idSF, triggerSF, m_isAF2,
-                                    m_susyObj.GetElectron_recoSF_Class(), m_eleSFTools.at(2), 0,
+                                    m_susyObj.GetElectron_recoSF_Class(), m_eleSFTools.at(2), NULL,
                                     runNumber);
   }
   eleOut->veryTightLHEffSF       = sf;
@@ -1091,7 +1089,7 @@ void SusyNtMaker::fillPhotonVar(int phIdx)
   phoOut->isConv = element->isConv();
 
   // same isolation
-  //phoOut->topoEtcone40_corrected = element->Etcone40_corrected();
+  phoOut->topoEtcone40_corrected = element->Etcone40_corrected();
 
   // Miscellaneous
   phoOut->idx    = phIdx;

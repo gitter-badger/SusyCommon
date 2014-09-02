@@ -3,6 +3,7 @@
 
 
 #include <iostream>
+#include <vector>
 
 #include "TSelector.h"
 #include "TTree.h"
@@ -16,6 +17,7 @@
 #include "PileupReweighting/TPileupReweighting.h"
 #include "LeptonTruthTools/RecoTauMatch.h"
 #include "ElectronPhotonSelectorTools/TElectronLikelihoodTool.h"
+#include "ElectronEfficiencyCorrection/TElectronEfficiencyCorrectionTool.h"
 
 
 /* #ifdef USEPDFTOOL */

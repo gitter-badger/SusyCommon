@@ -21,6 +21,7 @@
 #pragma link C++ class SusyD3PDAna;
 #pragma link C++ class SusyD3PDSkimmer;
 #pragma link C++ class SusyMetValidation;
+#pragma link C++ class LeptonInfo;
 #pragma link C++ namespace susy;
 #pragma link C++ class susy::D3PDAna;
 #pragma link C++ class susy::SusyNtMaker;
