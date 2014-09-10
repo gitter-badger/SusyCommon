@@ -95,9 +95,11 @@ vector<int> get_electrons_met(D3PDReader::MissingETCompositionD3PDObject *elMetE
 {
     vector<int> electrons_met;
     for (int iel=0; iel<elMetEgamma10NoTau->n(); iel++) {
-        //if(electrons->MET_Egamma10NoTau_wet()->at(iel).at(0) != 0){
+      //if(electrons->MET_Egamma10NoTau_wet()->at(iel).at(0) != 0){
+      if(elMetEgamma10NoTau->wet()->at(iel).at(0) != 0){
         // DG 2014-06-01: ntupcommon migration, I think that now we don't need to check this anymore...to be tested
-        if(true){
+	// Doug 2014-09-08 Saw a crash in a jet etmiss file without this. SUSYTools has a dependency on this that causes differences in vector size for m_el.
+        //if(true){
             electrons_met.push_back(iel);
         }
     }

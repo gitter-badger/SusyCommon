@@ -359,6 +359,12 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
 					 20.*GeV, 2.47, susySys, phoQual);
   }
 
+  if(m_dbg>=10){
+    dumpEvent();
+    dumpPreObjects();
+    dumpBaselineObjects();
+    dumpSignalObjects();
+  }
   performOverlapRemoval();
 
   // combine leptons
@@ -371,6 +377,11 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void D3PDAna::performOverlapRemoval()
 {
+  if(m_dbg>=10){
+    cout <<"BEFORE" <<endl;
+    dumpBaselineObjects();
+    dumpSignalObjects();
+  }
   D3PDReader::JetD3PDObject *jets = d3pdJets();
   // e-e overlap removal
   m_baseElectrons = overlap_removal(m_susyObj, d3pdElectrons(), m_preElectrons, d3pdElectrons(), m_preElectrons,
@@ -404,8 +415,17 @@ void D3PDAna::performOverlapRemoval()
   m_baseMuons     = overlap_removal(m_susyObj, d3pdMuons(), m_baseMuons, d3pdMuons(), m_baseMuons, 0.05, true, false);
 
   // jet-tau overlap removal
+  if(m_dbg>=10){
+    cout<< "     before taujet" << endl;
+    dumpBaselineObjects();
+    dumpSignalObjects();
+  }
   m_baseJets      = overlap_removal(m_susyObj, jets, m_baseJets, d3pdTaus(), m_sigTaus, 0.2, false, false); // m_baseTaus changed to signal leptons HACK
-
+  if(m_dbg>=10){
+    cout<< "     after taujet" << endl;
+    dumpBaselineObjects();
+    dumpSignalObjects();
+  }
   // remove SFOS lepton pairs with Mll < 12 GeV (MONOJET change)
   m_baseElectrons = RemoveSFOSPair(m_susyObj, d3pdElectrons(), m_baseElectrons, MLL_MIN_MONJET*GeV);
   m_baseMuons     = RemoveSFOSPair(m_susyObj, d3pdMuons(), m_baseMuons,     MLL_MIN_MONJET*GeV);
@@ -445,7 +465,10 @@ void D3PDAna::selectSignalObjects()
 /*--------------------------------------------------------------------------------*/
 void D3PDAna::buildMet(SusyNtSys sys)
 {
-  if(m_dbg>=5) cout << "buildMet" << endl;
+  if(m_dbg>=5){
+    cout << "buildMet" << endl;
+    cout << "sys: " << sys << endl;
+  }
 
   // Need the proper jet systematic for building systematic
   SystErr::Syste susySys = SystErr::NONE;
