@@ -5,7 +5,6 @@
 PACKAGE          = SusyCommon
 PACKAGE_PRELOAD  = Tree
 PACKAGE_CXXFLAGS = -O0
-PACKAGE_CXXFLAGS = 
 PACKAGE_LDFLAGS  = $(shell root-config --libs) 
 PACKAGE_BINFLAGS = -lCintex -lReflex -lPyROOT
 PACKAGE_DEP      = SusyNtuple LeptonTruthTools D3PDReader TriggerMatch ElectronPhotonSelectorTools
