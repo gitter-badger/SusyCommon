@@ -33,6 +33,7 @@ D3PDAna::D3PDAna() :
         m_sumw(1),
         m_xsec(-1),
         m_errXsec(-1),
+	m_run_mcgen(0),
         m_mcRun(0),
         m_mcLB(0),
         m_sys(false),
@@ -222,6 +223,52 @@ void D3PDAna::SlaveBegin(TTree *tree)
 Bool_t D3PDAna::Process(Long64_t entry)
 {
   m_event.GetEntry(entry);
+  m_run_mcgen=m_event.eventinfo.RunNumber();
+  if(m_isMC && m_run_mcgen==212399){
+    m_pileup = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup->SetDataScaleFactors(1/1.11);
+    m_pileup->AddPeriod(195848,200805,204264); 
+    m_pileup->AddPeriod(204265,204265,211521); 
+    m_pileup->AddPeriod(211522,211522,212398); 
+    m_pileup->AddPeriod(212399,212399,216432); 
+    m_pileup->AddBinning("pileup",50,-0.5,49.5);
+    m_pileup->SetUnrepresentedDataAction(2,1.00);
+    int pileupError = m_pileup->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
+    
+    m_pileup_up = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup_up->SetDataScaleFactors(1/1.08);
+    m_pileup_up->AddPeriod(195848,200805,204264); 
+    m_pileup_up->AddPeriod(204265,204265,211521); 
+    m_pileup_up->AddPeriod(211522,211522,212398); 
+    m_pileup_up->AddPeriod(212399,212399,216432); 
+    m_pileup_up->AddBinning("pileup",50,-0.5,49.5);
+    m_pileup_up->SetUnrepresentedDataAction(2,1.00);
+    m_pileup_up->Initialize();
+    pileupError = m_pileup_up->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
+    
+    m_pileup_dn = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup_dn->SetDataScaleFactors(1./1.14);
+    m_pileup_dn->AddPeriod(195848,200805,204264); 
+    m_pileup_dn->AddPeriod(204265,204265,211521); 
+    m_pileup_dn->AddPeriod(211522,211522,212398); 
+    m_pileup_dn->AddPeriod(212399,212399,216432); 
+    m_pileup_dn->AddBinning("pileup",50,-0.5,49.5);
+    m_pileup_dn->SetUnrepresentedDataAction(2,1.00);
+    m_pileup_dn->Initialize();
+    pileupError = m_pileup_dn->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
+  }
 
   static Long64_t chainEntry = -1;
   chainEntry++;
@@ -1513,7 +1560,7 @@ bool D3PDAna::runningOptionsAreValid()
                                  isStreamEgamma ? m_stream==Stream_Egamma :
                                  isStreamJetEt  ? m_stream==Stream_JetTauEtmiss :
                                  false);
-	if (isStreamJetEt) consistentStream=(m_stream==Stream_JetTauEtmiss);
+	if (isStreamJetEt && !consistentStream) consistentStream=(m_stream==Stream_JetTauEtmiss);
         if(!consistentStream) {
             valid=false;
             if(m_dbg)

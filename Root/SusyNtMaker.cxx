@@ -170,6 +170,53 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
       }
   }
 
+  if(m_isMC && m_event.eventinfo.RunNumber()==212399 && m_run_mcgen!=m_event.eventinfo.RunNumber()){
+    m_run_mcgen=m_event.eventinfo.RunNumber();
+    m_pileup = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup->SetDataScaleFactors(1/1.11);
+    m_pileup->AddPeriod(195848,200805,204264); 
+    m_pileup->AddPeriod(204265,204265,211521); 
+    m_pileup->AddPeriod(211522,211522,212398); 
+    m_pileup->AddPeriod(212399,212399,216432); 
+    m_pileup->AddBinning("pileup",50,-0.5,49.5);
+    m_pileup->SetUnrepresentedDataAction(2,1.00);
+    int pileupError = m_pileup->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
+    
+    m_pileup_up = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup_up->SetDataScaleFactors(1/1.08);
+    m_pileup_up->AddPeriod(195848,200805,204264); 
+    m_pileup_up->AddPeriod(204265,204265,211521); 
+    m_pileup_up->AddPeriod(211522,211522,212398); 
+    m_pileup_up->AddPeriod(212399,212399,216432); 
+    m_pileup_up->AddBinning("pileup",50,-0.5,49.5);
+    m_pileup_up->SetUnrepresentedDataAction(2,1.00);
+    m_pileup_up->Initialize();
+    pileupError = m_pileup_up->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
+    
+    m_pileup_dn = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup_dn->SetDataScaleFactors(1./1.14);
+    m_pileup_dn->AddPeriod(195848,200805,204264); 
+    m_pileup_dn->AddPeriod(204265,204265,211521); 
+    m_pileup_dn->AddPeriod(211522,211522,212398); 
+    m_pileup_dn->AddPeriod(212399,212399,216432); 
+    m_pileup_dn->AddBinning("pileup",50,-0.5,49.5);
+    m_pileup_dn->SetUnrepresentedDataAction(2,1.00);
+    m_pileup_dn->Initialize();
+    pileupError = m_pileup_dn->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
+  }
+
   static Long64_t chainEntry = -1;
   chainEntry++;
   if(m_dbg || chainEntry%5000==0)

@@ -382,6 +382,7 @@ class D3PDAna : public TSelector
     float                       m_xsec;         // optional user cross section, to override susy xsec usage
     float                       m_errXsec;      // user cross section uncertainty
 
+    uint                        m_run_mcgen;    // MC generator run. This is a data sample that sets the generated mu distribution
     uint                        m_mcRun;        // Random run number for MC from pileup tool
     uint                        m_mcLB;         // Random lb number for MC from pileup tool
 

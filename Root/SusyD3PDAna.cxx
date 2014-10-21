@@ -314,7 +314,7 @@ void SusyD3PDAna::performOverlapRemoval()
   // jet-e overlap removal
   m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_preJets, &d3pd.ele, m_baseElectrons,
                                     0.2, false, false);
-
+  cout << "SusyD3PDAna" << endl;
   if(m_selectTaus) {
     // tau-e overlap removal
     m_baseTaus    = overlap_removal(m_susyObj, &d3pd.tau, m_preTaus, &d3pd.ele, m_baseElectrons, 0.2, false, false);
