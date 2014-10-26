@@ -1344,6 +1344,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
 // Fill Truth Particle variables
 /*--------------------------------------------------------------------------------*/
 bool isMcAtNloTtbar(const int &channel) { return channel==105200; }
+bool isPowhegTtbar(const int &channel) { return channel==117050; }
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTruthParticleVars()
 {
@@ -1356,6 +1357,13 @@ void SusyNtMaker::fillTruthParticleVars()
   if(m_isMC && isMcAtNloTtbar(m_event.eventinfo.mc_channel_number())){
     vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(m_event.mc.pdgId(),
                                                                   m_event.mc.child_index()));
+    m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
+  }
+  if(m_isMC && isPowhegTtbar(m_event.eventinfo.mc_channel_number())){
+    vector<int> ttbarPart;
+    for(unsigned myj=0; myj<m_event.mc.pdgId()->size(); ++myj){
+      if(fabs(m_event.mc.pdgId()->at(myj))==6 && m_event.mc.status()->at(myj)==3) ttbarPart.push_back(myj);
+    }
     m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
   }
 
