@@ -237,8 +237,10 @@ int main(int argc, char** argv)
   cout << endl;
 
   // Build the input chain
-  cout << "susy!!!" << endl;
-  TChain* chain = new TChain("susy");
+  std::string chain_name = "susy";
+  if(doNtupCommon) chain_name = "physics";
+  const char *char_chain_name = chain_name.c_str();
+  TChain* chain = new TChain(char_chain_name);
   int fileErr = ChainHelper::addFileList(chain, fileList);
   if(fileErr) return 1;
   Long64_t nEntries = chain->GetEntries();
