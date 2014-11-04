@@ -120,6 +120,9 @@ class SusyNtMaker : public D3PDAna
     // Toggle trigger filtering
     void setFilterTrigger(bool filter=true) { m_filterTrigger = filter; }
 
+    // Toggle trigger filtering
+    void setNTUPCOMMON(bool setvar=true) { m_doNTUPCOMMON = setvar; }
+
     // Toggle saving container taus instead of selected taus
     void setSaveContTaus(bool saveContTaus=true) { m_saveContTaus = saveContTaus; }
 

@@ -428,6 +428,7 @@ class D3PDAna : public TSelector
     bool m_isMC;                // is MC flag
     bool m_flagsAreConsistent;  ///< whether the cmd-line flags are consistent with the event
     bool m_flagsHaveBeenChecked;///< whether the cmd-line have been checked
+    bool m_doNTUPCOMMON;        ///< do ntup common
 
     D3PDReader::Event m_event;
 

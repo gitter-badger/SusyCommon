@@ -105,6 +105,9 @@ void help()
   cout << "  --filterTrig turns on trigger"     << endl;
   cout << "     filtering."                     << endl;
 
+  cout << "  --doNtupCommon sets for ntup common"<< endl;
+  cout << "     D3PDs."                     << endl;
+
   cout << "  -h print this help"                << endl;
 }
 
@@ -138,6 +141,7 @@ int main(int argc, char** argv)
   uint nLepFilter = 0;
   uint nLepTauFilter = 2;
   bool filterTrig = false;
+  bool doNtupCommon = false;
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -196,6 +200,8 @@ int main(int argc, char** argv)
       nLepTauFilter = atoi(argv[++i]);
     else if (strcmp(argv[i], "--filterTrig") == 0)
       filterTrig = true;
+    else if (strcmp(argv[i], "--doNtupCommon") == 0)
+      doNtupCommon = true;
     else
     {
       help();
@@ -227,10 +233,12 @@ int main(int argc, char** argv)
   cout << "  nLepFilter    " << nLepFilter    << endl;
   cout << "  nLepTauFilter " << nLepTauFilter << endl;
   cout << "  filterTrig    " << filterTrig    << endl;
+  cout << "  doNtupCommon  " << doNtupCommon  << endl;
   cout << endl;
 
   // Build the input chain
-  TChain* chain = new TChain("physics");
+  cout << "susy!!!" << endl;
+  TChain* chain = new TChain("susy");
   int fileErr = ChainHelper::addFileList(chain, fileList);
   if(fileErr) return 1;
   Long64_t nEntries = chain->GetEntries();
@@ -258,6 +266,7 @@ int main(int argc, char** argv)
   susyAna->setNLepFilter(nLepFilter);
   susyAna->setNLepTauFilter(nLepTauFilter);
   susyAna->setFilterTrigger(filterTrig);
+  susyAna->setNTUPCOMMON(doNtupCommon);
   susyAna->setFileName("susyNt");
 
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here

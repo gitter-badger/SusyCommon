@@ -789,12 +789,13 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->mediumPP    = element->mediumPP();
   eleOut->tightPP     = element->tightPP();
 
-  eleOut->looseRelaxedLH = (int)get_electron_likelihood_result(LikeEnum::LooseRelaxed,m_electron_lh_tool,element);
-  eleOut->veryLooseLH    = (int)get_electron_likelihood_result(LikeEnum::VeryLoose   ,m_electron_lh_tool,element);
-  eleOut->looseLH        = (int)get_electron_likelihood_result(LikeEnum::Loose       ,m_electron_lh_tool,element);
-  eleOut->mediumLH       = (int)get_electron_likelihood_result(LikeEnum::Medium      ,m_electron_lh_tool,element);
-  eleOut->veryTightLH    = (int)get_electron_likelihood_result(LikeEnum::VeryTight   ,m_electron_lh_tool,element);
-
+  if(m_doNTUPCOMMON){
+    eleOut->looseRelaxedLH = (int)get_electron_likelihood_result(LikeEnum::LooseRelaxed,m_electron_lh_tool,element);
+    eleOut->veryLooseLH    = (int)get_electron_likelihood_result(LikeEnum::VeryLoose   ,m_electron_lh_tool,element);
+    eleOut->looseLH        = (int)get_electron_likelihood_result(LikeEnum::Loose       ,m_electron_lh_tool,element);
+    eleOut->mediumLH       = (int)get_electron_likelihood_result(LikeEnum::Medium      ,m_electron_lh_tool,element);
+    eleOut->veryTightLH    = (int)get_electron_likelihood_result(LikeEnum::VeryTight   ,m_electron_lh_tool,element);
+  }
   eleOut->d0            = element->trackd0pv();
   eleOut->errD0         = element->tracksigd0pv();
   eleOut->z0            = element->trackz0pv();

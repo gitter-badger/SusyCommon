@@ -48,7 +48,8 @@ D3PDAna::D3PDAna() :
         m_dbg(0),
         m_isMC(false),
         m_flagsAreConsistent(false),
-        m_flagsHaveBeenChecked(false)
+        m_flagsHaveBeenChecked(false),
+	m_doNTUPCOMMON(false)
 {
   m_hforTool.setVerbosity(HforToolD3PD::ERROR);
 
