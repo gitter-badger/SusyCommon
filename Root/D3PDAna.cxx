@@ -390,7 +390,7 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
   // Selection for met muons
   // Diff with preMuons is pt selection
   m_metMuons = get_muons_baseline(d3pdMuons(), !m_isMC, m_susyObj,
-                                  10.*GeV, 2.5, susySys);
+                                  5.*GeV, 2.5, susySys);
 
   // Preselect taus
   if(m_selectTaus){ m_preTaus = get_taus_baseline(d3pdTaus(), m_susyObj, TAU_PT_CUT*GeV, 2.47,
