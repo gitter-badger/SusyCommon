@@ -1018,7 +1018,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->phi = phi;
   jetOut->m   = m;
   if(jet_debug) cout << "pt: " <<  jetOut->pt << " eta: " <<  jetOut->eta 
-		     << " phi: " <<  jetOut->phi << endl;
+		     << " phi: " <<  jetOut->phi << " ECut_ValidMu: " << (ECut_ValidMu & m_susyNt.evt()->cutFlags[NtSys_NOM]) << endl;
   jetOut->detEta        = element->constscale_eta();
   jetOut->emfrac        = element->emfrac();
   jetOut->idx           = jetIdx;
