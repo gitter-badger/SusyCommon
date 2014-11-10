@@ -187,28 +187,34 @@ void D3PDAna::SlaveBegin(TTree *tree)
   if(m_isMC){
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
     m_pileup->SetDataScaleFactors(1/1.11);
-    m_pileup->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileup->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    //m_pileup->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
+    m_pileup->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12a_defaults.prw.root");
+    //m_pileup->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    m_pileup->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_xe80_tclcw_200842-215643.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
     if(pileupError){
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
       abort();
     }
-    m_pileup_up = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup_up = new Root::TPileupReweighting("PileupReweightingUp");
     m_pileup_up->SetDataScaleFactors(1/1.08);
-    m_pileup_up->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileup_up->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    //m_pileup_up->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
+    m_pileup_up->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12a_defaults.prw.root");
+    //m_pileup_up->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    m_pileup_up->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_xe80_tclcw_200842-215643.root");
     m_pileup_up->SetUnrepresentedDataAction(2);
     pileupError = m_pileup_up->Initialize();
     if(pileupError){
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
       abort();
     }
-    m_pileup_dn = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup_dn = new Root::TPileupReweighting("PileupReweightingDown");
     m_pileup_dn->SetDataScaleFactors(1/1.14);
-    m_pileup_dn->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileup_dn->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    //m_pileup_dn->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
+    m_pileup_dn->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12a_defaults.prw.root");
+    //m_pileup_dn->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    m_pileup_dn->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_xe80_tclcw_200842-215643.root");
     m_pileup_dn->SetUnrepresentedDataAction(2);
     pileupError = m_pileup_dn->Initialize();
     if(pileupError){

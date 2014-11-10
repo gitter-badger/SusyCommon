@@ -1002,10 +1002,11 @@ void SusyNtMaker::fillJetVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillJetVar(int jetIdx)
 {
+  bool jet_debug=false;
   const D3PDReader::JetD3PDObjectElement *element = &m_event.jet_AntiKt4LCTopo[jetIdx];
   m_susyNt.jet()->push_back( Susy::Jet() );
   Susy::Jet* jetOut = & m_susyNt.jet()->back();
-
+  if(jet_debug) cout << "Event:  " << m_event.eventinfo.EventNumber() << endl;
   const TLorentzVector* lv = & m_susyObj.GetJetTLV(jetIdx);
   float pt  = lv->Pt() / GeV;
   float eta = lv->Eta();
@@ -1016,7 +1017,8 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->eta = eta;
   jetOut->phi = phi;
   jetOut->m   = m;
-
+  if(jet_debug) cout << "pt: " <<  jetOut->pt << " eta: " <<  jetOut->eta 
+		     << " phi: " <<  jetOut->phi << endl;
   jetOut->detEta        = element->constscale_eta();
   jetOut->emfrac        = element->emfrac();
   jetOut->idx           = jetIdx;
@@ -1063,10 +1065,10 @@ void SusyNtMaker::fillJetVar(int jetIdx)
     //CHANGE!!! detEta goes to eta. Supposed to be the calibrated eta
     //#define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
 #define BCH_ARGS bchRun, bchLB, jetOut->eta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
-    jetOut->isBadMediumBCH = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 0);
-    jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 1);
+    jetOut->isBadMediumBCH    = !m_susyObj.passBCHCleaningMedium(BCH_ARGS,  0);
+    jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS,  1);
     jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
-    jetOut->isBadTightBCH = !m_susyObj.passBCHCleaningTight(BCH_ARGS);
+    jetOut->isBadTightBCH     = !m_susyObj.passBCHCleaningTight (BCH_ARGS);
 #undef BCH_ARGS
   }else{
     // Kill the event. Likely the pileup weight will also be zero.
@@ -1075,17 +1077,21 @@ void SusyNtMaker::fillJetVar(int jetIdx)
     jetOut->isBadMediumBCH_dn = true;
     jetOut->isBadTightBCH = true;
   }
-  if(false) cout << "    run: " <<  m_event.eventinfo.RunNumber() 
-		 << " evt: " << m_event.eventinfo.EventNumber()
-		 << " mcchannel: " << m_event.eventinfo.mc_channel_number()
-		 << " mcRun: " << bchRun
-		 << " lb: " << m_mcLB
-		 << " mRun: " << m_mcRun 
-		 << " detEta: " << jetOut->detEta 
-		 << " eta: " << jetOut->eta 
-		 << " pt: " << jetOut->pt 
-		 << " bch: " << jetOut->isBadTightBCH 
-		 << endl;
+  if(jet_debug) cout << "    run: " <<  m_event.eventinfo.RunNumber() 
+		     << " evt: " << m_event.eventinfo.EventNumber()
+		     << " mcchannel: " << m_event.eventinfo.mc_channel_number()
+		     << " mcRun: " << bchRun
+		     << " lb: " << m_mcLB
+		     << " mRun: " << m_mcRun 
+		     << " detEta: " << jetOut->detEta
+ 		     << " eta: " << jetOut->eta 
+		     << " phi: " << jetOut->phi 
+		     << " pt: " << jetOut->pt 
+		     << " bch_corr_cell: " << jetOut->bch_corr_cell
+		     << " emfrac: " << jetOut->emfrac
+		     << " tight bch: " << jetOut->isBadTightBCH 
+		     << " medium bch: " << jetOut->isBadMediumBCH 
+		     << endl;
   // Save the met weights for the jets
   // by checking status word similar to
   // what is done in met utility
