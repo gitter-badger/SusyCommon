@@ -17,6 +17,8 @@
 #include "D3PDReader/PhotonD3PDObject.h"
 #include "D3PDReader/TauD3PDObject.h"
 
+#include "BCHCleaningTool/BCHCleaningToolRoot.h"
+
 using namespace std;
 namespace smc =susy::mc;
 
@@ -1065,6 +1067,9 @@ void SusyNtMaker::fillJetVar(int jetIdx)
     //CHANGE!!! detEta goes to eta. Supposed to be the calibrated eta
     //#define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
 #define BCH_ARGS bchRun, bchLB, jetOut->eta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
+    int tmp_seed = 314159+m_event.eventinfo.EventNumber()+2718*(m_event.eventinfo.mc_channel_number())+jetIdx+bchRun*bchLB;
+    BCHTool::BCHCleaningToolRoot *bcht = m_susyObj.GetBCHCleaningTool();
+    bcht->SetSeed(tmp_seed);
     jetOut->isBadMediumBCH    = !m_susyObj.passBCHCleaningMedium(BCH_ARGS,  0);
     jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS,  1);
     jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
