@@ -1070,6 +1070,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
     int tmp_seed = 314159+m_event.eventinfo.EventNumber()+2718*(m_event.eventinfo.mc_channel_number())+jetIdx+bchRun*bchLB;
     BCHTool::BCHCleaningToolRoot *bcht = m_susyObj.GetBCHCleaningTool();
     bcht->SetSeed(tmp_seed);
+    if(jet_debug) cout << "tmp_seed: " << tmp_seed << " jetIdx: " << jetIdx << endl;
     jetOut->isBadMediumBCH    = !m_susyObj.passBCHCleaningMedium(BCH_ARGS,  0);
     jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS,  1);
     jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
@@ -1172,6 +1173,7 @@ void SusyNtMaker::fillTauVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTauVar(int tauIdx)
 {
+  bool debug_tau=false;
   if(m_dbg>=5) cout << "fillTauVar" << endl;
   m_susyNt.tau()->push_back( Susy::Tau() );
   Susy::Tau* tauOut = & m_susyNt.tau()->back();
@@ -1200,7 +1202,8 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   tauOut->jetBDTSigLoose        = element->JetBDTSigLoose();
   tauOut->jetBDTSigMedium       = element->JetBDTSigMedium();
   tauOut->jetBDTSigTight        = element->JetBDTSigTight();
-
+  if(debug_tau) cout << "tau: " << pt << " eta: " << eta << " phi: " << phi
+		     << " sigBDT: " << tauOut->jetBDTSigTight << endl;
   // New ele BDT corrections
   //tauOut->eleBDTLoose           = element->EleBDTLoose();
   //tauOut->eleBDTMedium          = element->EleBDTMedium();
