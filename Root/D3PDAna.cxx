@@ -396,7 +396,7 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
   // Selection for met muons
   // Diff with preMuons is pt selection
   m_metMuons = get_muons_baseline(d3pdMuons(), !m_isMC, m_susyObj,
-                                  5.*GeV, 2.5, susySys);
+                                  6.*GeV, 2.5, susySys); // add muons to the met down to 6 GeV. Not lower so that we avoid potential overlap with the Eflow
 
   // Preselect taus
   if(m_selectTaus){ m_preTaus = get_taus_baseline(d3pdTaus(), m_susyObj, TAU_PT_CUT*GeV, 2.47,
