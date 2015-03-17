@@ -151,11 +151,9 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     static Long64_t chainEntry = -1;
     chainEntry++;
     m_event.getEntry(chainEntry); // DG 2014-09-19 TEvent wants the chain entry, not the tree entry (?)
-//    if (eventinfo->eventNumber()==4569387){
-  
+    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     retrieveCollections();
 
-    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     if(!m_flagsHaveBeenChecked) {
         m_flagsAreConsistent = runningOptionsAreValid();
         m_flagsHaveBeenChecked=true;
@@ -174,7 +172,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
             cout << "***********************************************************" << endl;
         }
 
-//    fillTriggerHisto(); // dantrim trig
+    fillTriggerHisto(); // dantrim trig
     if(selectEvent() && m_fillNt){
         matchTriggers();
         fillNtVars();
@@ -185,7 +183,6 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
             abort();
         }
     }
-//    } if eventNumber==4569387
     deleteShallowCopies();
     clearOutputObjects();
     clearContainerPointers();
@@ -1550,11 +1547,6 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
 //----------------------------------------------------------
 void SusyNtMaker::fillTriggerHisto() // dantrim trig
 {
-    bool passedL1  = m_trigTool->isPassed("L1_.*");
-    bool passedL2  = m_trigTool->isPassed("L2_.*");
-    bool passedEF  = m_trigTool->isPassed("EF_.*");
-    bool passedHLT = m_trigTool->isPassed("HLT_.*");
-    printf("L1: %d, L2: %d, EF: %d, HLT: %d\n",passedL1,passedL2,passedEF,passedHLT);
     for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++ ) {
         if(m_trigTool->isPassed(triggerNames[iTrig])) {
             h_passTrigLevel->Fill(iTrig+0.5);
@@ -1575,12 +1567,17 @@ bool SusyNtMaker::passEventlevelSelection()
 
     // cutflow comparison with Ximo, et al.
     bool pass_grl(m_cutFlags & ECut_GRL);
+    bool pass_lar(m_cutFlags & ECut_LarErr);
+    bool pass_tile(m_cutFlags & ECut_TileErr);
+    bool pass_TTC(m_cutFlags & ECut_TTC);
+    bool pass_errorFlags(pass_lar && pass_tile && pass_TTC);
+
     
-    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
-    bool pass_errorFlags = true;
-    if( (eventinfo->errorState(xAOD::EventInfo::LAr)==xAOD::EventInfo::Error) ||
-        (eventinfo->errorState(xAOD::EventInfo::Tile)==xAOD::EventInfo::Error) ||
-        (eventinfo->isEventFlagBitSet(xAOD::EventInfo::Core, 18) )  ) { pass_errorFlags = false; }
+   // const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+   // bool pass_errorFlags = true;
+   // if( (eventinfo->errorState(xAOD::EventInfo::LAr)==xAOD::EventInfo::Error) ||
+   //     (eventinfo->errorState(xAOD::EventInfo::Tile)==xAOD::EventInfo::Error) ||
+   //     (eventinfo->isEventFlagBitSet(xAOD::EventInfo::Core, 18) )  ) { pass_errorFlags = false; }
 
 
     fillCutFlow(true, w); // initial bin (total read-in)
@@ -1631,7 +1628,8 @@ bool SusyNtMaker::passObjectlevelSelection()
     TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
     FillCutFlow fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow, &m_cutstageCounters);
     fillCutFlow.iCut = 3; // we've filled up to 'Primary vertex' in passEvent...
-
+    
+    bool pass_JetCleaning(m_cutFlags & ECut_BadJet);
     bool pass_ge2bl(2>=(m_baseElectrons.size()+m_baseMuons.size()));
 
     // cutflow comparison with Ximo, et al.
@@ -1644,15 +1642,18 @@ bool SusyNtMaker::passObjectlevelSelection()
 
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     bool pass_goodpv(m_cutFlags & ECut_GoodVtx);
-    xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(sysInfo);
-    xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(sysInfo);
-    bool pass_bad_muon = true;
-    bool pass_cosmic = true;
+    bool pass_bad_muon(m_cutFlags & ECut_BadMuon);
+    bool pass_cosmic(m_cutFlags & ECut_Cosmic);
 
-    for(auto &i : m_baseMuons) {
-        if(m_susyObj[m_eleIDDefault]->IsBadMuon(*muons->at(i))) { pass_bad_muon = false; }
-        if(muons->at(i)->auxdata<bool>("passOR") && muons->at(i)->auxdata<bool>("cosmic")) { pass_cosmic = false; }
-    } // muon loop
+ //   xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(sysInfo);
+ //   xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(sysInfo);
+ //   bool pass_bad_muon = true;
+ //   bool pass_cosmic = true;
+
+//    for(auto &i : m_baseMuons) {
+//        if(m_susyObj[m_eleIDDefault]->IsBadMuon(*muons->at(i))) { pass_bad_muon = false; }
+//        if(muons->at(i)->auxdata<bool>("passOR") && muons->at(i)->auxdata<bool>("cosmic")) { pass_cosmic = false; }
+//    } // muon loop
 
     
 
@@ -1820,18 +1821,6 @@ bool SusyNtMaker::passObjectlevelSelection()
     
     bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
-//    int n_baselep = 0;
-//    for(auto &i : m_baseElectrons) {
-//        xAOD::Electron* el = electrons->at(i);
-//        if ( pass_bad_muon && pass_JetCleaning && pass_goodpv && pass_cosmic && el->auxdata<bool>("passOR") && !(fabs(el->eta())>=2.47) ) n_baselep++;
-//    }
-//    for(auto &i : m_baseMuons) {
-//        xAOD::Muon* mu = muons->at(i);
-//        if( pass_bad_muon && pass_JetCleaning && pass_goodpv && pass_cosmic && mu->auxdata<bool>("passOR") && !(fabs(mu->eta())>=2.4) ) n_baselep++;
-//    }
-//    bool pass_exactly1base(1==n_baselep);
-    
-   // bool pass_cosmic(m_cutFlags & ECut_Cosmic);
     bool pass_e1j(1==(m_baseJets.size()));
     bool pass_e1sj(1==(m_sigJets.size()));
 
