@@ -238,15 +238,16 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
 
     // dantrim trig
-/*    m_configTool = new TrigConf::xAODConfigTool("TrigConf::xAODConfigTool");
+    m_configTool = new TrigConf::xAODConfigTool("xAODConfigTool");
     ToolHandle<TrigConf::ITrigConfigTool> configHandle(m_configTool);
     CHECK( configHandle->initialize() );
     
     m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
     m_trigTool->setProperty("ConfigTool", configHandle);
     m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
+    m_trigTool->setProperty("OutputLevel", MSG::ERROR).ignore(); // dantrim Mar 16 2015 -- tool outputs extraneous errors, ignore them
     CHECK( m_trigTool->initialize() );
-*/
+
 
     m_escopier = new EventShapeCopier("Kt4LCCopier");
 //    if ( m_isDerivation ) {
@@ -404,9 +405,7 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     if(sys!=NtSys::NOM && syst_affectsJets){
         if(m_xaodJets==NULL){
             // dantrim event shape
-            if ( m_isDerivation ) {
-                m_escopier->renameEventDensities();
-            }
+            if ( m_isDerivation ) m_escopier->renameEventDensities();
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets, m_xaodJetsAux);
         }
         if(m_dbg>=5) cout << "xaodJets " << m_xaodJets->size() << endl;
@@ -415,9 +414,7 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     else{
         if(m_xaodJets_nom==NULL){
             // dantrim event shape
-            if ( m_isDerivation ) {
-                m_escopier->renameEventDensities();
-            }
+            if ( m_isDerivation ) m_escopier->renameEventDensities();
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets_nom, m_xaodJetsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodJets_nom " << m_xaodJets_nom->size() << endl;
@@ -554,6 +551,11 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     if(m_dbg>=5) cout << "selectBaselineObjects with sys=" <<  SusyNtSysNames[sys] << endl;
 
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
+    xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
+    xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
+  //  m_susyObj[m_eleIDDefault]->OverlapRemoval(electrons, muons, jets, false);
+    m_susyObj[m_eleIDDefault]->OverlapRemoval(xaodElectrons(sysInfo,sys), xaodMuons(sysInfo, sys), xaodJets(sysInfo, sys), false);
+  //  xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     int iEl = -1;
     for(const auto& el : *electrons) {
         iEl++;
@@ -564,9 +566,11 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" eta " << el->eta()
                          <<" phi " << el->phi()
                          <<endl;
-        if(!el->auxdata< bool >("baseline")) continue;
+      //  if(!el->auxdata< bool >("baseline")) continue;
         //AT:12/16/14 TO UPDATE Base Obj should be after overlap removal
-        if( el->auxdata< bool >("baseline") ) m_baseElectrons.push_back(iEl);
+        if( el->auxdata< bool >("baseline") && 
+            el->auxdata< bool >("passOR")   &&
+            !(fabs(el->eta())>=2.47) ) m_baseElectrons.push_back(iEl);
 
         if(m_dbg>=5) cout<<"\t El passing"
                          <<" baseline? "<< bool(el->auxdata< bool >("baseline"))
@@ -577,7 +581,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
 
     int iMu = -1;
-    xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
+ //   xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
     for(const auto& mu : *muons){
         iMu++;
         m_preMuons.push_back(iMu);
@@ -591,13 +595,15 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" eta " << mu->eta()
                          <<" phi " << mu->phi()
                          <<endl;
-        if( mu->auxdata< bool >("baseline") ) m_baseMuons.push_back(iMu);
+        if( mu->auxdata< bool >("baseline") &&
+            mu->auxdata< bool >("passOR")   &&
+            !(fabs(mu->eta())>=2.4) ) m_baseMuons.push_back(iMu);
         // if(signal) m_sigMuons.push_back(iMu);
     }
     if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;
 
     int iJet=-1;
-    xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
+  //  xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
     for(const auto& jet : *jets){
         iJet++;
         m_preJets.push_back(iJet);
@@ -609,14 +615,15 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" eta " << jet->eta()
                          <<" phi " << jet->phi()
                          <<endl;
-        if(jet->auxdata< bool >("baseline")) m_baseJets.push_back(iJet);
+        if(jet->auxdata< bool >("baseline") ) m_baseJets.push_back(iJet);
     }
     if(m_dbg) cout<<"preJets["<<m_preJets.size()<<"]"<<endl;
 
     // overlap removal and met (need to build 'MyJet' coll?)
     //AT:: Depending of what container is affected by systematic, feed the correct set for the met computation
     // dantrim March 2 2015 -- setting "doHarmonization" to False, in accord with Ximo & Fabio
-    m_susyObj[m_eleIDDefault]->OverlapRemoval(xaodElectrons(sysInfo,sys), xaodMuons(sysInfo, sys), xaodJets(sysInfo, sys), false);
+    //m_susyObj[m_eleIDDefault]->OverlapRemoval(xaodElectrons(sysInfo,sys), xaodMuons(sysInfo, sys), xaodJets(sysInfo, sys), false);
+
 
     int iTau=-1;
     xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);

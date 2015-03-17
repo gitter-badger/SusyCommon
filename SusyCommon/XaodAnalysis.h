@@ -50,6 +50,8 @@
 #include "TBits.h"
 #include "TrigConfxAOD/xAODConfigTool.h"
 #include "TrigDecisionTool/TrigDecisionTool.h"
+#include "xAODTrigger/TrigNavigation.h"
+#include "TrigConfHLTData/HLTTriggerElement.h"
 #include "xAODTrigEgamma/TrigElectron.h"
 #include "xAODTrigEgamma/TrigElectronContainer.h"
 

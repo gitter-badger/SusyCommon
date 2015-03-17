@@ -16,15 +16,19 @@ namespace susy {
 
     const std::vector<std::string> triggerNames = {
        // electron triggers 
-                "EF_e7_medium1",                       
-                "EF_e12Tvh_loose1",                    
-                "EF_e12Tvh_medium1",                   
-                "EF_e24vh_medium1",                    
-                "EF_e24vhi_medium1",                   
-                "EF_e24vh_medium1_e7_medium1",         
+    /*            "_e7_medium1",                       
+                "_e12Tvh_loose1",                    
+                "_e12Tvh_medium1",                   
+                "_e24vh_medium1",                    
+                "_e24vhi_medium1",                   
+                "_e24vh_medium1_e7_medium1",    */     
 
         // muon triggers
-                "EF_mu8",                              
+                "HLT_mu26_imedium",
+                "HLT_mu50",
+                "HLT_mu60_0eta105_msonly",
+                "HLT_2mu4"
+         /*       "EF_mu8",                              
                 "EF_mu13",                             
                 "EF_mu18_tight",                       
                 "EF_mu24i_tight",                      
@@ -56,7 +60,7 @@ namespace susy {
         // MET triggers
                 "EF_2mu8_EFxe40wMu_tclcw",             
                 "EF_xe80_tclcw_loose", 
-                "EF_xe80T_tclcw_loose"
+                "EF_xe80T_tclcw_loose" */
             };
         
 
