@@ -1,0 +1,17 @@
+#
+# "rel20" branch of SusyCommon
+#
+
+# --------------------------------- #
+# April 6 2015 - Danny              #
+# --------------------------------- #
+Container name changes:
+    - In SusyCommon/XaodAnalysis.cxx: "TruthEvent" --> "TruthEvents"
+    - In SusyCommon/XaodAnalysis.cxx: "TruthParticle" --> "TruthParticles"
+
+SUSYTools issues: Work in SUSYToolsTester but not in SusyCommon/SusyNtMaker (possibly including string or something else?)
+    - in SUSYObjDef.cxx L613 (GetMET) : replace "m_inputMETCore" (def. L122) by "MET_Core_AntiKt4LCTopo"
+    - in SUSYObjDef.cxx L618 (GetMET) : replace "m_inputMETRef"  (def. L123) by "MET_Reference_AntiKt4LCTopo"
+    - in SUSYObjDef.cxx L624 (GetMET) : replace "m_inputMETMap"  (def. L124) by "METAssoc_AntiKt4LCTopo"
+# --------------------------------- #
+# --------------------------------- #
