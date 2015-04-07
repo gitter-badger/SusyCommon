@@ -81,8 +81,8 @@ XaodAnalysis::XaodAnalysis() :
         //dantrim trig
         m_evtTrigBits(m_nTriggerBits),
         m_configTool(NULL),
-        m_trigTool(NULL),
-        m_escopier(NULL)
+        m_trigTool(NULL)  // >> use m_susyObj[]->m_trigDec instead
+  //      m_escopier(NULL)  // >> needed in rel20??
 {
     clearContainerPointers();
     clearOutputObjects();
@@ -185,11 +185,10 @@ void XaodAnalysis::Terminate()
     for(int i=Medium; i<eleIDInvalid; i++){
         delete m_susyObj[i];
     }
-    // dantrim trig
     delete m_trigTool;
     delete m_configTool;
 
-    delete m_escopier;
+//    delete m_escopier;
     
     
 
@@ -208,6 +207,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[i]->setProperty("IsData",          static_cast<int>(!m_isMC));
         m_susyObj[i]->setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
         m_susyObj[i]->setProperty("EleId", eleIDNames[i]);
+        m_susyObj[i]->setProperty("METInputSuffix", "AntiKt4LCTopo");
+        m_susyObj[i]->setProperty("METOutputTerm", "Final");
 
         CHECK( m_susyObj[i]->SUSYToolsInit() );
     }
@@ -235,7 +236,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     }
 
 
-    initPileupTool();
+//    initPileupTool();
     initMuonTools();
     initTauTools();
 
@@ -246,7 +247,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     //            Call "renameEventDensities". This is temporary? And only for
     //            DxAODs. If running over DxAOD be sure to put "derived" in the sample
     //            name '-s' option (case insensitive).
-    m_escopier = new EventShapeCopier("Kt4LCCopier");
+//    m_escopier = new EventShapeCopier("Kt4LCCopier"); // >> needed in rel20?
 
 
     return *this;
@@ -413,7 +414,7 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     if(sys!=NtSys::NOM && syst_affectsJets){
         if(m_xaodJets==NULL){
             // dantrim event shape
-            if ( m_isDerivation ) m_escopier->renameEventDensities();
+ //           if ( m_isDerivation ) m_escopier->renameEventDensities(); // >> needed in rel20??
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets, m_xaodJetsAux);
         }
         if(m_dbg>=5) cout << "xaodJets " << m_xaodJets->size() << endl;
@@ -422,7 +423,7 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     else{
         if(m_xaodJets_nom==NULL){
             // dantrim event shape
-            if ( m_isDerivation ) m_escopier->renameEventDensities();
+//            if ( m_isDerivation ) m_escopier->renameEventDensities(); // >> needed in rel20??
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets_nom, m_xaodJetsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodJets_nom " << m_xaodJets_nom->size() << endl;
@@ -454,7 +455,7 @@ xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys
 const xAOD::TruthEventContainer* XaodAnalysis::retrieveTruthEvent(xAOD::TEvent &e, bool dbg)
 {
     const xAOD::TruthEventContainer* truth = NULL;
-    e.retrieve(truth, "TruthEvent");
+    e.retrieve(truth, "TruthEvents");
     if(dbg){
         if(truth) cout<<"XaodAnalysis::retrieveTruthEvent: retrieved "<<endl;
         else      cout<<"XaodAnalysis::retrieveTruthEvent: failed"<<endl;
@@ -473,7 +474,7 @@ const xAOD::TruthEventContainer* XaodAnalysis::xaodTruthEvent()
 const xAOD::TruthParticleContainer* XaodAnalysis::retrieveTruthParticles(xAOD::TEvent &e, bool dbg)
 {
     const xAOD::TruthParticleContainer* truthP = NULL;
-    e.retrieve(truthP, "TruthParticle");
+    e.retrieve(truthP, "TruthParticles");
     if(dbg){
         if(truthP) cout<<"XaodAnalysis::retrieveTruthParticles: retrieved "<<truthP->size()<<endl;
         else       cout<<"XaodAnalysis::retrieveTruthParticles: failed"<<endl;
@@ -579,12 +580,12 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<endl;
       //  if(!el->auxdata< bool >("baseline")) continue;
         //AT:12/16/14 TO UPDATE Base Obj should be after overlap removal
-        if( el->auxdata< bool >("baseline") &&
-            el->auxdata< bool >("passOR") ) m_baseElectrons.push_back(iEl); 
+        if( (bool)el->auxdata< char >("baseline")==1 &&
+            (bool)el->auxdata< char >("passOR")==1 ) m_baseElectrons.push_back(iEl); 
 
         if(m_dbg>=5) cout<<"\t El passing"
-                         <<" baseline? "<< bool(el->auxdata< bool >("baseline"))
-                         <<" signal? "<< bool(el->auxdata< bool >("signal"))
+                         <<" baseline? "<< (bool)(el->auxdata< char >("baseline"))
+                         <<" signal? "<<   (bool)(el->auxdata< char >("signal"))
                          <<endl;
         m_preElectrons.push_back(iEl);
     }
@@ -599,14 +600,14 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu, ST::SignalIsoExp::TightIso);
         m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
         if(m_dbg>=5) cout<<"Mu passing"
-                         <<" baseline? "<< bool(mu->auxdata< bool >("baseline"))
-                         <<" signal? "<< bool(mu->auxdata< bool >("signal"))
+                         <<" baseline? "<< bool(mu->auxdata< char >("baseline"))
+                         <<" signal? "<<   bool(mu->auxdata< char >("signal"))
                          <<" pt " << mu->pt()
                          <<" eta " << mu->eta()
                          <<" phi " << mu->phi()
                          <<endl;
-        if( mu->auxdata< bool >("baseline") && 
-            mu->auxdata< bool >("passOR") ) m_baseMuons.push_back(iMu); 
+        if( (bool)mu->auxdata< char >("baseline")==1 && 
+            (bool)mu->auxdata< char >("passOR")==1 ) m_baseMuons.push_back(iMu); 
         // if(signal) m_sigMuons.push_back(iMu);
     }
     if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;
@@ -618,14 +619,14 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         m_preJets.push_back(iJet);
 //        m_susyObj[m_eleIDDefault]->IsBJet(*jet);              // dantrim - Feb 25 2015 - still causing seg-faults
         if(m_dbg>=5) cout<<"Jet passing"
-                         <<" baseline? "<< bool(jet->auxdata< bool >("baseline"))
-                         <<" signal? "<< bool(jet->auxdata< bool >("signal"))
+                         <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
+                         <<" signal? "<<   bool(jet->auxdata< char >("signal")==1)
                          <<" pt " << jet->pt()
                          <<" eta " << jet->eta()
                          <<" phi " << jet->phi()
                          <<endl;
-        if(jet->auxdata< bool >("baseline") &&
-           jet->auxdata< bool >("passOR") ) m_baseJets.push_back(iJet); 
+        if((bool)jet->auxdata< char >("baseline")==1 &&
+           (bool)jet->auxdata< char >("passOR")==1 ) m_baseJets.push_back(iJet); 
     }
     if(m_dbg) cout<<"preJets["<<m_preJets.size()<<"]"<<endl;
 
@@ -641,13 +642,13 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         iTau++;
         m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
         if(m_dbg>=5) cout<<"Tau passing"
-                         <<" signal? "<< bool(tau->auxdata< bool >("signal"))
+                         <<" signal? "<< bool(tau->auxdata< char >("signal")==1)
                          <<" pt " << tau->pt()
                          <<" eta " << tau->eta()
                          <<" phi " << tau->phi()
                          <<endl;
 
-        if(tau->auxdata< bool >("baseline")) m_preTaus.push_back(iTau);
+        if((bool)tau->auxdata< char >("baseline")==1) m_preTaus.push_back(iTau);
         //tau->pt()>20*GeV && abs(tau->eta())<2.47
     }
     if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
@@ -750,8 +751,8 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     int iEl = 0;
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     for(const auto& el : *electrons) {
-        if( el->auxdata< bool >("signal") &&
-            el->auxdata< bool >("passOR") )   m_sigElectrons.push_back(iEl);
+        if( (bool)el->auxdata< char >("signal")==1 &&
+            (bool)el->auxdata< char >("passOR")==1 )   m_sigElectrons.push_back(iEl);
             iEl++;
     }
     if(m_dbg) cout<<"m_sigElectrons["<<m_sigElectrons.size()<<"]"<<endl;
@@ -759,8 +760,8 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     int iMu = 0;
     xAOD::MuonContainer* muons = xaodMuons(sysInfo,sys);
     for(const auto& mu : *muons){
-        if( mu->auxdata< bool >("signal") &&
-            mu->auxdata< bool >("passOR") )  m_sigMuons.push_back(iMu);
+        if( (bool)mu->auxdata< char >("signal")==1 &&
+            (bool)mu->auxdata< char >("passOR")==1 )  m_sigMuons.push_back(iMu);
             iMu++;
     }
     if(m_dbg) cout<<"m_sigMuons["<<m_sigMuons.size()<<"]"<<endl;
@@ -769,8 +770,8 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
     for(const auto& jet : *jets){
         if(jet->pt()*MeV2GeV >20.0 &&
-           jet->auxdata< bool >("passOR") &&
-           !jet->auxdata< bool >("bad") //AT: Added 12/13/14
+            jet->auxdata< char >("passOR")==1 &&
+           !((bool)jet->auxdata< char >("bad")==1) //AT: Added 12/13/14
            // DG tmp-2014-11-02 (!jet->isAvailable("bad") || !jet->auxdata< bool >("bad"))
             )
             m_sigJets.push_back(iJet);
@@ -782,11 +783,11 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
     for(const auto& tau : *taus){
         if(tau->pt() * MeV2GeV >20.0 &&
-           tau->auxdata< bool >("signal"))
+           (bool)tau->auxdata< char >("signal")==1)
             // tau->auxdata< int >("passOR") && // tau not involved in OR?
             m_sigTaus.push_back(iTau);
+        }
         iTau++;
-    }
     if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
 
     int iPh=0;
@@ -794,7 +795,7 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
  //   if(photons) {
     for(const auto& ph : *photons){
         //m_susyObj[m_eleIDDefault]->FillPhoton(ph);
-        if(ph->auxdata< bool >("baseline"))
+        if((bool)ph->auxdata< char >("baseline")==1)
             m_sigPhotons.push_back(iPh);
         iPh++;
     }
@@ -950,51 +951,8 @@ void XaodAnalysis::fillEventTriggers()
     m_evtTrigBits.ResetAllBits();
     for (unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++) {
         if(m_trigTool->isPassed(triggerNames[iTrig]))  m_evtTrigBits.SetBitNumber(iTrig, true);
+    //    if(m_susyObj[m_eleIDDefault]->isTrigPassed(triggerNames[iTrig])) m_evtTrigBits.SetBitNumber(iTrig, true);
     }
-/*    
-    m_evtTrigFlags = 0; 
-    
-
-    if(m_trigTool->isPassed("EF_e7_medium1"))                   m_evtTrigFlags |= triggerbits::TRIG_e7_medium1;
-    if(m_trigTool->isPassed("EF_e12Tvh_loose1"))                m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_loose1;
-    if(m_trigTool->isPassed("EF_e12Tvh_medium1"))               m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_medium1;
-    if(m_trigTool->isPassed("EF_e24vh_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_e24vh_medium1;
-    if(m_trigTool->isPassed("EF_2e12Tvh_loose1"))               m_evtTrigFlags |= triggerbits::TRIG_2e12Tvh_loose1;
-    if(m_trigTool->isPassed("EF_e24vh_medium1_e7_medium1"))     m_evtTrigFlags |= triggerbits::TRIG_e24vh_medium1_e7_medium1;
-    // move to muon triggers since validating on Muon stream
-    if(m_trigTool->isPassed("EF_mu8"))                          m_evtTrigFlags |= triggerbits::TRIG_mu8;
-    if(m_trigTool->isPassed("EF_mu13"))                         m_evtTrigFlags |= triggerbits::TRIG_mu18_tight;
-    if(m_trigTool->isPassed("EF_mu24i_tight"))                  m_evtTrigFlags |= triggerbits::TRIG_mu24i_tight;
-    if(m_trigTool->isPassed("EF_2mu13"))                        m_evtTrigFlags |= triggerbits::TRIG_2mu13;
-    if(m_trigTool->isPassed("EF_mu18_tight_mu8_EFFS"))          m_evtTrigFlags |= triggerbits::TRIG_mu18_tight_mu8_EFFS;
-    if(m_trigTool->isPassed("EF_e12Tvh_medium1_mu8"))           m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_medium1_mu8;
-    if(m_trigTool->isPassed("EF_mu18_tight_e7_medium1"))        m_evtTrigFlags |= triggerbits::TRIG_mu18_tight_e7_medium1;
-
-    // photon trigger
-    if(m_trigTool->isPassed("EF_g20_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g20_loose;
-    if(m_trigTool->isPassed("EF_g40_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g40_loose;
-    if(m_trigTool->isPassed("EF_g60_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g60_loose;
-    if(m_trigTool->isPassed("EF_g80_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g80_loose;
-    if(m_trigTool->isPassed("EF_g100_loose"))                   m_evtTrigFlags |= triggerbits::TRIG_g100_loose;
-    if(m_trigTool->isPassed("EF_g120_loose"))                   m_evtTrigFlags |= triggerbits::TRIG_g120_loose;
-    
-    // tau trigger
-    if(m_trigTool->isPassed("EF_tau20_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_tau20_medium1;
-    if(m_trigTool->isPassed("EF_tau20Ti_medium1"))              m_evtTrigFlags |= triggerbits::TRIG_tau20Ti_medium1;
-    if(m_trigTool->isPassed("EF_tau29Ti_medium1"))              m_evtTrigFlags |= triggerbits::TRIG_tau29Ti_medium1;
-    if(m_trigTool->isPassed("EF_tau29Ti_medium1_tau20Ti_medium1")) m_evtTrigFlags |= triggerbits::TRIG_tau29Ti_medium1_tau20Ti_medium1;
-    if(m_trigTool->isPassed("EF_tau20Ti_medium1_e18vh_medium1"))   m_evtTrigFlags |= triggerbits::TRIG_tau20Ti_medium1_e18vh_medium1;
-    if(m_trigTool->isPassed("EF_tau20_medium1_mu15"))           m_evtTrigFlags |= triggerbits::TRIG_tau20_medium1_mu15;
-    
-    // lep-tau matching trigger
-    if(m_trigTool->isPassed("EF_e18vh_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_e18vh_medium1;
-    if(m_trigTool->isPassed("EF_mu15"))                         m_evtTrigFlags |= triggerbits::TRIG_mu15;
-    
-    // MET triggers
-    if(m_trigTool->isPassed("EF_2mu8_EFxe40wMu_tclcw"))         m_evtTrigFlags |= triggerbits::TRIG_2mu8_EFxe40wMu_tclcw;
-    if(m_trigTool->isPassed("EF_xe80_tclcw_loose"))             m_evtTrigFlags |= triggerbits::TRIG_xe80_tclcw_loose;
-    if(m_trigTool->isPassed("EF_xe80T_tclcw_loose"))            m_evtTrigFlags |= triggerbits::TRIG_xe80T_tclcw_loose;
-*/
 
 }
 
@@ -1283,7 +1241,7 @@ bool XaodAnalysis::passBadJet(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::JetContainer* jets = xaodJets(sysInfo, sys);
     bool pass_jetCleaning = true;
     for(auto &i : m_preJets) { 
-        if(jets->at(i)->auxdata< bool >("bad")) pass_jetCleaning = false;
+        if((bool)jets->at(i)->auxdata< char >("bad")==1) pass_jetCleaning = false;
     } 
     return pass_jetCleaning;
 //  return !IsBadJetEvent(jets, m_baseJets, 20.*GeV, m_susyObj);
@@ -1325,7 +1283,7 @@ bool XaodAnalysis::passCosmic(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::MuonContainer* muons = xaodMuons(sysInfo, sys);
     bool pass_cosmic = true;
     for(auto &i : m_baseMuons) {
-        if(muons->at(i)->auxdata< bool >("passOR") && muons->at(i)->auxdata< bool >("cosmic")) pass_cosmic = false;
+        if((bool)muons->at(i)->auxdata< char >("passOR")==1 && (bool)muons->at(i)->auxdata< char >("cosmic")==1) pass_cosmic = false;
     }
     return pass_cosmic;
 
@@ -1812,7 +1770,7 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
 XaodAnalysis& XaodAnalysis::retrieveCollections()
 {
     if(m_dbg) cout << "XaodAnalysis::retrieveCollections " << endl;
-    xaodEventInfo();
+   // xaodEventInfo();
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     if(m_dbg) cout << " run " << setw(6) << eventinfo->runNumber()
                    << " event " << setw(7) << eventinfo->eventNumber() << endl;

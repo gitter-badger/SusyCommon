@@ -27,10 +27,13 @@
 Trigger::Trigger(TChain* input_chain, bool dbg) :
     m_trigHisto(NULL)
 {
+    cout << " ------------------ " << endl;
     cout << "Initializing Trigger" << endl;
+    cout << " ------------------ " << endl;
     m_trigHisto = static_cast<TH1F*>(input_chain->GetFile()->Get("trig"));
     m_triggerMap.clear();
     buildTriggerMap();
+    cout << " ------------------ " << endl;
     m_dbg = dbg;
 }
 // ------------------------------------------- //
@@ -57,7 +60,18 @@ void Trigger::buildTriggerMap()
 // ------------------------------------------- //
 bool Trigger::passTrigger(TBits& triggerbits, std::string triggerName)
 {
-    return triggerbits.TestBitNumber(m_triggerMap[triggerName]);
+    if(m_triggerMap.find(triggerName)!=m_triggerMap.end()){
+        return triggerbits.TestBitNumber(m_triggerMap[triggerName]);
+    }
+    else {
+        std::cout << "Trigger " << triggerName << " not available!!" << std::endl;
+        std::cout << "Dumping available triggers and exitting." << std::endl;
+        dumpTriggerInfo();
+        exit(1);
+    }
+//    std::map<std::string, int>::const_iterator trig_it = m_triggerMap.begin();
+//    std::map<std::string, int>::const_iterator trig_end = m_triggerMap.end(); 
+//    return triggerbits.TestBitNumber(m_triggerMap[triggerName]);
 }
 
 // ------------------------------------------- //
@@ -69,8 +83,8 @@ void Trigger::dumpTriggerInfo()
    
     // remember: bit is stored as (bin # - 1) 
     cout << " // ---------------------------------- // " << endl;
-    cout << " // Available triggers                 // " << endl;
-    cout << " // Name : Bit                         // " << endl;
+    cout << "    Available triggers                    " << endl;
+    cout << "    Name : Bit                            " << endl;
     for(int trigBin = 1; trigBin < m_trigHisto->GetNbinsX(); trigBin++) {
         string triggerChainName = m_trigHisto->GetXaxis()->GetBinLabel(trigBin);
         cout << "    " << m_trigHisto->GetXaxis()->GetBinLabel(trigBin) << " : " << trigBin-1 << endl;
