@@ -2,18 +2,23 @@
 #define SusyCommon_Trigger_h
 
 #include <iostream>
+#include <vector>
 #include <map>
 #include "TH1F.h"
-
-#include "SusyNtuple/SusyDefs.h"
-#include "SusyNtuple/SusyNt.h"
-#include "SusyNtuple/SusyNtObject.h"
+#include "TBits.h"
 
 
-using namespace std;
-using namespace Susy;
+////////////////////////////////////////////////////////
+// Function to grab the trigger "container"           //
+//      Used only at stage of writing the SusyNt      //
+////////////////////////////////////////////////////////
+std::vector<std::string> getTrigNames(int run);
 
 
+////////////////////////////////////////////////////////
+// Trigger tool                                       //
+//      To be used at the analyis level of SusyNt     //
+////////////////////////////////////////////////////////
 class Trigger {
 public :
     

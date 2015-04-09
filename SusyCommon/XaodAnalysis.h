@@ -31,7 +31,7 @@
 #include "TauAnalysisTools/TauTruthMatchingTool.h"
 #include "TauAnalysisTools/TauTruthTrackMatchingTool.h"
 
-// #include "xAODTruth/TruthEvent.h"
+#include "xAODTruth/TruthEvent.h"
 #include "xAODCore/ShallowCopy.h"
 
 //CP systematics
@@ -45,7 +45,7 @@
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
-#include "EventShapeTools/EventShapeCopier.h"
+//#include "EventShapeTools/EventShapeCopier.h" // >> needed in rel20??
 
 //Trigger
 #include "TBits.h"
@@ -63,6 +63,8 @@
 #include "TrigDecisionTool/TrigDecisionTool.h"
 #include "xAODTrigEgamma/TrigElectron.h"
 #include "xAODTrigEgamma/TrigElectronContainer.h"
+
+#include "SusyCommon/Trigger.h"
 
 
 #include "TBits.h"
@@ -125,6 +127,7 @@ namespace susy {
     /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
     virtual Int_t   Version() const { return 2; }
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
+    void setTriggerSet(int set) { m_triggerSet = set; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
     bool processingMc12b() const { return m_mcProd == MCProd_MC12b; }
     
@@ -170,6 +173,7 @@ namespace susy {
     /**
        By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::xaodMuons().
     */
+    virtual std::vector<std::string> xaodTriggers();
     virtual xAOD::JetContainer* xaodJets(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
     /// access the default collection of photons from SUSYObjDef_xAOD
     virtual xAOD::PhotonContainer* xaodPhotons(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
@@ -219,6 +223,8 @@ namespace susy {
     //
     void resetTriggers(){
       m_evtTrigBits.ResetAllBits(); // dantrim trig
+      m_eleTrigBits.clear();
+      m_muoTrigBits.clear();
       m_evtTrigFlags = 0;
       m_eleTrigFlags.clear();
       m_muoTrigFlags.clear();
@@ -227,7 +233,7 @@ namespace susy {
     void matchTriggers(){
       fillEventTriggers();
 //      matchElectronTriggers();
-//      matchMuonTriggers();
+      matchMuonTriggers();
 //      matchTauTriggers();
     }
     
@@ -236,7 +242,8 @@ namespace susy {
     bool matchElectronTrigger(const TLorentzVector* lv, std::string chain);
  //   bool matchElectronTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     void matchMuonTriggers();
-    bool matchMuonTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
+    bool matchMuonTrigger(const TLorentzVector& lv, std::string chain);
+//    bool matchMuonTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     void matchTauTriggers();
     bool matchTauTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
 
@@ -348,6 +355,8 @@ namespace susy {
 
 
     TString                     m_sample;       // sample name
+    int                         m_triggerSet;   // trigger set to store
+    std::vector<std::string>    m_triggerNames; 
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
     bool                        m_isAF2;        // flag for ATLFastII samples
@@ -422,6 +431,8 @@ namespace susy {
 
     // Trigger object matching maps
     // Key: d3pd index, Val: trig bit word
+    std::map<int, TBits>        m_eleTrigBits;
+    std::map<int, TBits>        m_muoTrigBits;
     std::map<int, long long>    m_eleTrigFlags; // electron trigger matching flags
     std::map<int, long long>    m_muoTrigFlags; // muon trigger matching flags
     std::map<int, long long>    m_tauTrigFlags; // tau trigger matching flags
@@ -569,7 +580,7 @@ namespace susy {
     Trig::TrigDecisionTool*     m_trigTool;
 
     // event shape copier
-    EventShapeCopier*           m_escopier;
+//    EventShapeCopier*           m_escopier; // >> needed in rel20??
 
   };
 

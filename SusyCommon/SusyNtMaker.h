@@ -6,6 +6,8 @@
 #include "SusyCommon/SystematicMapping.h"
 
 
+#include "SusyCommon/Trigger.h"
+
 
 #include "TStopwatch.h"
 
@@ -86,8 +88,8 @@ class SusyNtMaker : public XaodAnalysis
     void fillTauVars();
     void fillPhotonVars();
     void fillTruthParticleVars();
-    void storeElectron(const xAOD::Electron &in);
-    void storeMuon(const xAOD::Muon &in);
+    void storeElectron(const xAOD::Electron &in, int i=0);
+    void storeMuon(const xAOD::Muon &in, int i=0);
     void storeJet(const xAOD::Jet &in);
     void storeTau(const xAOD::TauJet &in);
     void storePhoton(const xAOD::Photon &in);
@@ -178,6 +180,8 @@ class SusyNtMaker : public XaodAnalysis
     uint                m_nLepFilter;   // Number of light leptons to filter on.
     uint                m_nLepTauFilter;// Number of leptons (light+tau) to filter on.
     bool                m_filterTrigger;// Only save events that pass any of our triggers
+    int                 m_triggerSet;   // Set which triggers are stored
+    std::vector<std::string> m_triggerNames;
     bool                m_saveContTaus; // Save container taus instead of selected taus
 
     // Some useful flags

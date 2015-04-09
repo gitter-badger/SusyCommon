@@ -1,4 +1,4 @@
-#include "egammaAnalysisUtils/CaloIsoCorrection.h"
+//#include "egammaAnalysisUtils/CaloIsoCorrection.h"
 
 //#include "TauCorrections/TauCorrections.h"
 #include "TauCorrUncert/TauSF.h"
@@ -20,7 +20,7 @@
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 
-#include "SusyCommon/TriggerMap.h"
+//#include "SusyCommon/Trigger.h"
 
 
 #include <algorithm> // max_element
@@ -268,16 +268,16 @@ void SusyNtMaker::fillEventVars()
     
     evt->trigBits         = m_evtTrigBits; // dantrim trig
     
-
-    evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
-    evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
-    evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
+    // dantrim April 3 2015 - for rel20 Pileup does not seem to be working at the moment
+//    evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
+//    evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
+//    evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
     evt->xsec             = m_isMC? getXsecWeight() : 1;
     evt->errXsec          = m_isMC? m_errXsec : 1;
     evt->sumw             = m_isMC? m_sumw : 1;
 
     if(m_isMC){
-        xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
+//        xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin(); // dantrim Apr 3 2015 -- "truthEvent" branch not picked up in sample
         // ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::PDGID1); // not available for some samples
         // ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::PDGID2);
         // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::X1);
@@ -296,7 +296,7 @@ void SusyNtMaker::fillElectronVars()
     if(m_dbg>=5) cout<<"fillElectronVars"<<endl;
     xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(systInfoList[0]);
     for(auto &i : m_preElectrons){
-        storeElectron(*(electrons->at(i)));
+        storeElectron(*(electrons->at(i)), i);
     }
 }
 //----------------------------------------------------------
@@ -305,7 +305,7 @@ void SusyNtMaker::fillMuonVars()
     if(m_dbg>=5) cout<<"fillMuonVars"<<endl;
     xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(systInfoList[0]);
     for(auto &i : m_preMuons){
-        storeMuon(*(muons->at(i)));
+        storeMuon(*(muons->at(i)), i);
     }
 }
 //----------------------------------------------------------
@@ -360,7 +360,7 @@ void SusyNtMaker::fillTruthParticleVars()
 }
 
 //----------------------------------------------------------
-void SusyNtMaker::storeElectron(const xAOD::Electron &in)
+void SusyNtMaker::storeElectron(const xAOD::Electron &in, int idx)
 {
     Susy::Electron out;
     double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
@@ -369,8 +369,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
-    out.isBaseline = in.auxdata< bool >("baseline");
-    out.isSignal = in.auxdata< bool >("signal");
+    out.isBaseline = in.auxdata< char >("baseline");
+    out.isSignal   = in.auxdata< char >("signal");
     out.q   = in.charge();
     bool all_available=true;
     
@@ -451,6 +451,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     // 
     // // Trigger flags
     // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
+    out.trigBits = m_eleTrigBits[idx];
 
  
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
@@ -475,7 +476,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 //     return result;
 // }
 //----------------------------------------------------------
-void SusyNtMaker::storeMuon(const xAOD::Muon &in)
+void SusyNtMaker::storeMuon(const xAOD::Muon &in, int Idx)
 {
     Susy::Muon out;
     double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
@@ -485,10 +486,10 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.phi = phi;
     out.m   = m;
     out.q   = in.charge();
-    out.isBaseline = in.auxdata< bool >("baseline");
-    out.isSignal   = in.auxdata< bool >("signal");
+    out.isBaseline = in.auxdata< char >("baseline");
+    out.isSignal   = in.auxdata< char >("signal");
     out.isCombined = in.muonType()==xAOD::Muon::Combined;
-    out.isCosmic   = in.auxdata< bool >("cosmic");
+    out.isCosmic   = in.auxdata< char >("cosmic");
     out.isBadMuon  = m_susyObj[m_eleIDDefault]->IsBadMuon(in); // Uses default qoverpcut of 0.2
 
     bool all_available=true;
@@ -553,6 +554,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // Trigger Flags 
     // ASM-2014-11-02 :: Trigger information in DC14 samples are problematic
     // muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
+    out.trigBits = m_muoTrigBits[Idx];
 
     // Scale Factors
     // ASM-2014-11-02 :: How to get the uncertatinty?
@@ -759,7 +761,6 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillMetVars(SusyNtSys sys)
 {
-
     xAOD::MissingETContainer::const_iterator met_it = m_metContainer->find("Final");
   
     if (met_it == m_metContainer->end()) {
@@ -849,7 +850,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
 
     // cout << "Done looking for MET terms!" << endl;
 
-#warning fillMetVars not implemented
+//#warning fillMetVars not implemented
     // if(m_dbg>=5) cout << "fillMetVars: sys " << sys << endl;
 
     // // Just fill the lv for now
@@ -1445,9 +1446,10 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
 {
     h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
     h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
-    h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", triggerNames.size()+1, 0.0, triggerNames.size()+1); // dantrim trig
-    for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++) {
-        h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, triggerNames[iTrig].c_str());
+    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", trigs.size()+1, 0.0, trigs.size()+1); // dantrim trig
+    for ( unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
+        h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, trigs[iTrig].c_str());
     }
     
     return *this;
@@ -1544,8 +1546,9 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
 //----------------------------------------------------------
 void SusyNtMaker::fillTriggerHisto() // dantrim trig
 {
-    for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++ ) {
-        if(m_trigTool->isPassed(triggerNames[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
+    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    for ( unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++ ) {
+        if(m_trigTool->isPassed(trigs[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
     }
 }
 //----------------------------------------------------------
