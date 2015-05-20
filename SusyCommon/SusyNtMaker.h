@@ -168,6 +168,9 @@ class SusyNtMaker : public XaodAnalysis
     // If so sets flag "m_is8TeV" to false
     void checkIfInputIs13TeV();
     
+    // debugging txt file for dumping information -- dantrim Mar 4 2015
+    std::fstream ofile;
+    std::string debug_name = "cutflow_debug.txt";
 
  protected:
     SusyNtMaker& initializeOuputTree();

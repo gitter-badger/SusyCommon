@@ -73,7 +73,8 @@ XaodAnalysis::XaodAnalysis() :
     //m_event(xAOD::TEvent::kClassAccess),
     m_event(xAOD::TEvent::kBranchAccess), ///> dantrim -- (in PAT threads, TDT is supposed to work with kBranchAccess option)
     m_store(),
-    m_eleIDDefault(TightLLH),
+    #warning Stop2L uses MediumLLH
+    m_eleIDDefault(MediumLLH),
 	m_electronEfficiencySFTool(0),
     m_elecSelLikelihoodVeryLoose(0),
     m_elecSelLikelihoodLoose(0),
@@ -223,7 +224,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         cout << "XaodAnalysis::initSusyTools: " << name <<endl;
         cout << "------------------------------------------------------------" << endl;
 
-        m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
+        //m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
+        m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::ERROR);
         //m_susyObj[i]->msg().setLevel(m_dbg ? MSG::VERBOSE : MSG::WARNING);
         m_susyObj[i]->setProperty("EleId", electronIdName);
         int datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
@@ -235,8 +237,13 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
 
         //AT 05-01-15 For p1872 Need to use the AODfix version
 #warning p1872 need to use AODfix MET_RefinalFix and MET_TrackFix
-        m_susyObj[i]->setProperty("METInputCont", "MET_RefFinalFix");
-        m_susyObj[i]->setProperty("METInputMap", "METMap_RefFinalFix");
+     //   m_susyObj[i]->setProperty("METInputCont", "MET_RefFinalFix");
+     //   m_susyObj[i]->setProperty("METInputMap", "METMap_RefFinalFix");
+
+        // met terms for Stop2L
+        m_susyObj[i]->setProperty("METTauTerm", "");
+        m_susyObj[i]->setProperty("METInputMap", "METMap_EleLHMedNoTau");
+        m_susyObj[i]->setProperty("METInputCont", "MET_EleLHMedNoTau");
 
   // dantrim May 6 2015 - Jet calibration for derivations, and GSC
         if(m_isDerivation) { m_susyObj[i]->setProperty("DoJetAreaCalib", true); }
@@ -749,7 +756,10 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& el : *electrons) {
         iEl++;
        // m_susyObj[m_eleIDDefault]->IsSignalElectron(*el);
-        m_susyObj[m_eleIDDefault]->IsSignalElectronExp(*el, ST::SignalIsoExp::TightIso);
+        ST::IsSignalElectronExpCutArgs electron_cuts;
+        electron_cuts.etcut(10000);
+        #warning changing signal electron et cut to 10 GeV
+        m_susyObj[m_eleIDDefault]->IsSignalElectronExp(*el, ST::SignalIsoExp::TightIso, electron_cuts);
         if(m_dbg>=5) cout<<"El "
                          <<" pt " << el->pt()
                          <<" eta " << el->eta()
@@ -757,8 +767,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<endl;
       //  if(!el->auxdata< bool >("baseline")) continue;
         //AT:12/16/14 TO UPDATE Base Obj should be after overlap removal
-        if( (bool)el->auxdata< char >("baseline")==1 &&
-            (bool)el->auxdata< char >("passOR")==1 ) m_baseElectrons.push_back(iEl); 
+        if( (bool)el->auxdata< char >("baseline")==1 ) m_baseElectrons.push_back(iEl); //&& // m_baseElectrons.push_back(iEl); //&&
+         //   (bool)el->auxdata< char >("passOR")==1 ) m_baseElectrons.push_back(iEl); 
 
         if(m_dbg>=5) cout<<"\t El passing"
                          <<" baseline? "<< (bool)(el->auxdata< char >("baseline"))
@@ -771,6 +781,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         if( et * MeV2GeV > 7 &&
             fabs(el->eta()) < 2.47 )
             m_preElectrons.push_back(iEl);
+    //    m_preElectrons.push_back(iEl);
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
 
@@ -778,10 +789,14 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
  //   xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
     for(const auto& mu : *muons){
         iMu++;
-        if(mu->pt()* MeV2GeV > 3 && 
-           m_muonSelectionToolVeryLoose->accept(mu)) m_preMuons.push_back(iMu); //AT: Save VeryLoose pt>3 muon only
+       // if(mu->pt()* MeV2GeV > 3 && 
+       //    m_muonSelectionToolVeryLoose->accept(mu)) m_preMuons.push_back(iMu); //AT: Save VeryLoose pt>3 muon only
+        m_preMuons.push_back(iMu);
         //m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
-        m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu, ST::SignalIsoExp::TightIso);
+        ST::IsSignalMuonExpCutArgs muon_cuts;
+        muon_cuts.ptcut(10000);
+        #warning changing signal muon pt cut to 10 GeV!!
+        m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu, ST::SignalIsoExp::TightIso, muon_cuts);
         m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
         if(m_dbg>=5) cout<<"Mu passing"
                          <<" baseline? "<< bool(mu->auxdata< char >("baseline"))
@@ -790,8 +805,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" eta " << mu->eta()
                          <<" phi " << mu->phi()
                          <<endl;
-        if( (bool)mu->auxdata< char >("baseline")==1 && 
-            (bool)mu->auxdata< char >("passOR")==1 ) m_baseMuons.push_back(iMu); 
+        if( (bool)mu->auxdata< char >("baseline")==1 ) m_baseMuons.push_back(iMu); //&& // m_baseMuons.push_back(iMu); // && 
+         //   (bool)mu->auxdata< char >("passOR")==1 ) m_baseMuons.push_back(iMu); 
         // if(signal) m_sigMuons.push_back(iMu);
     }
     if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;

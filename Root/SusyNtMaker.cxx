@@ -95,14 +95,13 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
     labels.push_back("Initial"        );
     labels.push_back("GRL"            );
     labels.push_back("error flags"    );
-    labels.push_back("bad muon"       );
-    labels.push_back("jet cleaning"   );
     labels.push_back("good pvx"       );
+    labels.push_back("bad muon"       );
     labels.push_back("pass cosmic"    );
-    labels.push_back("1 == base lepton"   );
-    labels.push_back("1 == sig. lepton"   );
-    labels.push_back("1 == base jet"  );
-    labels.push_back("1 == sig. jet"  );
+    labels.push_back("jet cleaning"   );
+    labels.push_back("base lepton >= 1"   );
+    labels.push_back("base lepton == 2");
+    labels.push_back("sig lepton == 2");
   //  labels.push_back("SusyProp Veto"  );
   //  labels.push_back("GRL"            );
   //  labels.push_back("LAr Error"      );
@@ -1640,6 +1639,8 @@ bool SusyNtMaker::passEventlevelSelection()
 //----------------------------------------------------------
 bool SusyNtMaker::passObjectlevelSelection()
 {
+
+    ofile.open(debug_name.c_str(), ios::app | ios::out);
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     float w = m_isMC ? eventinfo->mcEventWeight() : 1; 
 
@@ -1649,6 +1650,52 @@ bool SusyNtMaker::passObjectlevelSelection()
     // buildMet(sys);  //AT: 12/16/14: Should retreive Met be called so that can add cut on met as event filter ?
      
     assignObjectCleaningFlags(sysInfo, sys);
+
+    xAOD::MuonContainer* muons = xaodMuons(sysInfo, sys);
+    xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo, sys);
+    bool pass_badMuon = true;
+    bool pass_Cosmic = true;
+    for(auto &i : m_baseMuons) {
+        xAOD::Muon* mu = muons->at(i);
+        if(m_susyObj[m_eleIDDefault]->IsBadMuon(*mu)) pass_badMuon = false;
+        if( mu->auxdata< char >("passOR") && m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu)) pass_Cosmic = false;
+    }
+    int n_base = 0;
+    int n_sig = 0;
+    for(auto &ie : m_baseElectrons) {
+        xAOD::Electron* ele = electrons->at(ie);
+        if(ele->auxdata<char>("baseline")==1 && ele->auxdata<char>("passOR")==1) n_base++;
+        if(ele->auxdata<char>("baseline")==1 && ele->auxdata<char>("passOR")==1 && ele->auxdata<char>("signal")==1) n_sig++;
+    }
+    for(auto &im : m_baseMuons) {
+        xAOD::Muon* mu = muons->at(im);
+        if(mu->auxdata<char>("baseline")==1 && mu->auxdata<char>("passOR")==1) n_base++;
+        if(mu->auxdata<char>("baseline")==1 && mu->auxdata<char>("passOR")==1 && mu->auxdata<char>("signal")==1) n_sig++;
+    }
+   
+        if(n_sig==2){ 
+        ofile << "EventNumber " << eventinfo->eventNumber() << endl; 
+        for(auto &i : m_preMuons) {
+            xAOD::Muon* mu = muons->at(i);
+            if((mu->auxdata<char>("signal")==1 && mu->auxdata<char>("passOR")==1)){
+            ofile << "  mu(" << i << ") pt: " << mu->pt() << "  phi: " << mu->phi() << "  eta: " << mu->eta()
+                 << "  base?: " << (mu->auxdata<char>("baseline")==1 ? 1 : 0) << "  sig?: " << (mu->auxdata<char>("signal")==1 ? 1 : 0)
+                 << "  sig+OR?: " << ((mu->auxdata<char>("signal")==1 && mu->auxdata<char>("passOR")==1) ? 1 : 0) << endl;
+        }
+        }
+        for(auto &i : m_preElectrons) {
+            xAOD::Electron* el = electrons->at(i);
+            if((el->auxdata<char>("signal")==1 && el->auxdata<char>("passOR")==1)){
+            ofile << "  el(" << i << ") pt: " << el->pt() << "  phi: " << el->phi() << "  eta: " << el->eta()
+                 << "  base?: " << (el->auxdata<char>("baseline")==1 ? 1 : 0) << "  sig?: " << (el->auxdata<char>("signal")==1 ? 1 : 0)
+                 << "  sig+OR?: " << ((el->auxdata<char>("signal")==1 && el->auxdata<char>("passOR")==1) ? 1 : 0) << endl;
+            }
+            }
+        }
+    ofile.close();
+    bool pass_nMinBase(n_base>0);
+    bool pass_e2Base(n_base==2);
+    bool pass_e2Sig(n_sig==2);
 
     n_pre_ele += m_preElectrons.size();
     n_pre_muo += m_preMuons.size();
@@ -1673,26 +1720,29 @@ bool SusyNtMaker::passObjectlevelSelection()
     bool pass_cosmic(m_cutFlags & ECut_Cosmic);
     
     bool pass_ge2bl(2>=(m_baseElectrons.size()+m_baseMuons.size()));
-    bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
-    bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
+    bool pass_ge1base( (m_baseElectrons.size()+m_baseMuons.size())>0);
+    bool pass_e2base( (m_baseElectrons.size()+m_baseMuons.size()==2));
+    bool pass_e2sig( (m_sigElectrons.size()+m_sigMuons.size()==2));
     bool pass_e1j(1==(m_baseJets.size()));
     bool pass_e1sj(1==(m_sigJets.size()));
 
-    fillCutFlow(pass_bad_muon, w);
-    fillCutFlow(pass_JetCleaning, w);
+   // fillCutFlow(pass_bad_muon, w);
     fillCutFlow(pass_goodpv, w);
-    fillCutFlow(pass_cosmic, w);
-    fillCutFlow(pass_exactly1base, w);
-    fillCutFlow(pass_exactly1sig, w);
-    fillCutFlow(pass_e1j, w);
-    fillCutFlow(pass_e1sj, w);
+    fillCutFlow(pass_badMuon, w);
+    fillCutFlow(pass_Cosmic, w);
+    fillCutFlow(pass_JetCleaning, w);
+    fillCutFlow(pass_nMinBase, w);
+    fillCutFlow(pass_e2Base, w);
+    fillCutFlow(pass_e2Sig, w);
+  //  fillCutFlow(pass_e1j, w);
+  //  fillCutFlow(pass_e1sj, w);
 
 
     // filter
     bool pass = true;
     bool pass_nLepFilter( (m_preElectrons.size()+m_preMuons.size()) >= m_nLepFilter );
     bool trig_has_fired( h_passTrigLevel->Integral(0,-1) > 0. ); // check if any of the triggers fired
-    if(m_filter) {
+    if(false) {
         if(m_filterTrigger) { pass = (pass_nLepFilter && trig_has_fired); }
         else { pass = pass_nLepFilter; }
     }
