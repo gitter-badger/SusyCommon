@@ -3,12 +3,12 @@
 
 
 #include <iostream>
+#include <vector>
 
 #include "TStopwatch.h"
 
 #include "SusyCommon/SusyD3PDAna.h"
 #include "SusyNtuple/SusyNtObject.h"
-
 
 /// SusyNtMaker - a class for making SusyNt from Susy D3PDs
 class SusyNtMaker : public SusyD3PDAna
@@ -18,6 +18,7 @@ class SusyNtMaker : public SusyD3PDAna
   typedef std::vector< int > vint_t;
   public:
 
+    std::vector<int> c1c1_ids;
     // Constructor and destructor
     SusyNtMaker();
     virtual ~SusyNtMaker();
@@ -125,6 +126,9 @@ class SusyNtMaker : public SusyD3PDAna
      */
     bool computeHiggsPtUncertaintyParameters(const vint_t &h_children_indices,
                                              float &h_pt, int &n_truth_jets);
+
+
+
  private:
     //static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
     //static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);

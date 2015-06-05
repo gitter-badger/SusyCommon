@@ -1080,7 +1080,83 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 // Fill Truth Particle variables
 /*--------------------------------------------------------------------------------*/
-bool isMcAtNloTtbar(const int &channel) { return channel==105200; }
+bool isMcAtNloTtbar(const int &channel) { return channel==117050; }
+bool isC1C1Sample(const int &channel) { 
+   int tmp[] =  
+{
+204021,
+204020,
+204015,
+204014,
+204009,
+204008,
+204003,
+204002,
+144902,
+176559,
+157969,
+144904,
+176560,
+157970,
+144907,
+144905,
+176561,
+144908,
+144910,
+157971,
+144911,
+176562,
+144914,
+144912,
+144915,
+157972,
+176563,
+144916,
+144919,
+144920,
+176558,
+176564,
+144917,
+176567,
+144921,
+176568,
+157973,
+176565,
+144922,
+144925,
+176569,
+144926,
+176570,
+144923,
+144927,
+157977,
+176566,
+157974,
+157978,
+176571,
+157979,
+176572,
+157975,
+157980,
+157983,
+157981,
+157984,
+176573,
+157985,
+157976,
+157982,
+157986,
+204001,
+204000,
+204647,
+204643,
+204644,
+204645,
+204646
+};
+    std::vector<int> c1c1_ids( tmp, tmp+69);
+    return find(c1c1_ids.begin(), c1c1_ids.end(), channel)!=c1c1_ids.end(); 
+}
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTruthParticleVars()
 {
@@ -1091,6 +1167,11 @@ void SusyNtMaker::fillTruthParticleVars()
   vector<int> truthTaus = m_recoTruthMatch.TauFromHS_McIdx();
   m_truParticles.insert( m_truParticles.end(), truthTaus.begin(), truthTaus.end() );
   if(m_isMC){
+      if(isC1C1Sample(d3pd.truth.channel_number())){
+          vector<int> c1c1Part(WhTruthExtractor::c1c1_particles(d3pd.truth.pdgId(),
+                                                                d3pd.truth.child_index()));
+          m_truParticles.insert(m_truParticles.end(), c1c1Part.begin(), c1c1Part.end());
+      }
       if(isMcAtNloTtbar(d3pd.truth.channel_number())){
           vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(d3pd.truth.pdgId(),
                                                                         d3pd.truth.child_index()));
