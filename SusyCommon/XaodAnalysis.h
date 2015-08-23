@@ -166,6 +166,7 @@ namespace Susy {
        By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::xaodMuons().
     */
     virtual std::vector<std::string> xaodTriggers();
+    virtual std::vector<std::string> xaodTriggers_muonSF();
     virtual xAOD::JetContainer* xaodJets(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
     /// access the default collection of photons from SUSYObjDef_xAOD
     virtual xAOD::PhotonContainer* xaodPhotons(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
@@ -378,6 +379,7 @@ namespace Susy {
     TString                     m_sample;       // sample name
     std::string                 m_triggerSet;   // trigger set to store
     std::vector<std::string>    m_triggerNames; 
+    std::vector<std::string>    m_triggerNames_muonSF;
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
     uint64_t                    m_nEventsProcessed; // initial number of events (pre-skim) in the input samples

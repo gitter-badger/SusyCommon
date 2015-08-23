@@ -6,6 +6,10 @@
 #include "SusyCommon/XaodAnalysis.h"
 #include "SusyCommon/SystematicMapping.h"
 
+// muon container for getting trig SF
+#include "xAODMuon/MuonContainer.h"
+#include "xAODMuon/MuonAuxContainer.h"
+
 
 #include "SusyNtuple/TriggerTools.h"
 

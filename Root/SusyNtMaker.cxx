@@ -754,10 +754,38 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // - one for each MuonId that we use:
     // - Loose and Medium
     //////////////////////////////////////
-    if(m_isMC && (out.loose || out.medium) && (fabs(out.eta)<2.5)) {
+    if(m_isMC  && (out.loose || out.medium) && (fabs(out.eta)<2.5)){
+        // reco/iso SF (currently isoSF only defined for LooseTrackOnly Isolation WP)
+        // GetSignalMuon(const xAOD::Muon, recoSF = true, isoSF = false);
         out.muoEffSF[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in);
         out.muoEffSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in);
-    }
+
+        // Trigger SF (as the tool only accepts muon containers we need to build a proxy container each time-- OY VEY!)
+        xAOD::MuonContainer *sf_muon = new xAOD::MuonContainer;
+        xAOD::MuonAuxContainer *sf_muon_aux = new xAOD::MuonAuxContainer;
+        sf_muon->setStore(sf_muon_aux);
+        xAOD::Muon* sfMu = new xAOD::Muon;
+        sfMu->makePrivateStore(in);
+        sf_muon->push_back(sfMu);
+        // providing the MuonTriggerSF tool with 'real' runNumber produces errors and it automatically
+        // sets it to the run 267639 (this should be changed in more recent tags when they provide
+        // period-dependent SFs so check this!)
+        m_susyObj[SusyObjId::muoLoose]->setRunNumber(267639); // don't forget this thing SUSYTools doesn't do automatically
+        m_susyObj[SusyObjId::muoMedium]->setRunNumber(267639); // don't forget this thing SUSYTools doesn't do automatically
+
+        // loose
+        for(uint i = 0; i < xaodTriggers_muonSF().size(); i++){
+            out.muoTrigSF_loose[i] = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, xaodTriggers_muonSF()[i]);
+        } // i
+
+        // medium
+        for(uint i = 0; i < xaodTriggers_muonSF().size(); i++){
+            out.muoTrigSF_medium[i] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, xaodTriggers_muonSF()[i]);
+        } // i
+
+        delete sf_muon;
+        delete sf_muon_aux;
+    } // if MC && quality
     //////////////////////////////////////
     // Systematic variation on muon SF
     //////////////////////////////////////

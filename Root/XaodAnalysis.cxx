@@ -1437,11 +1437,20 @@ bool XaodAnalysis::muIsOfType(const xAOD::Muon &in, MuonId id)
 std::vector<std::string> XaodAnalysis::xaodTriggers()
 {
     if(m_triggerNames.size()==0){
-        m_triggerNames = getTrigNames(m_triggerSet);
+        m_triggerNames = TriggerTools::getTrigNames(m_triggerSet);
         return m_triggerNames;
     }
     else { return m_triggerNames; }
 }
+std::vector<std::string> XaodAnalysis::xaodTriggers_muonSF()
+{
+    if(m_triggerNames_muonSF.size()==0){
+        m_triggerNames_muonSF = TriggerTools::getTrigNames("muSF");
+        return m_triggerNames_muonSF;
+    }
+    else { return m_triggerNames_muonSF; }
+}
+
 /*--------------------------------------------------------------------------------*/
 // Event trigger flags
 /*--------------------------------------------------------------------------------*/
